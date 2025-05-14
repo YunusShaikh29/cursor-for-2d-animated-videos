@@ -4,6 +4,7 @@ import styles from "./page.module.css"
 import { getToken } from "next-auth/jwt";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import {prisma} from "database/index"
 
 type Props = Omit<ImageProps, "src"> & {
   srcLight: string;
@@ -22,6 +23,8 @@ const ThemeImage = (props: Props) => {
 };
 
 export default async function Home() {
+
+
 
    const session = await auth()
 
