@@ -1,7 +1,6 @@
 'use client';
 
 import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
 import { AvatarFallback, AvatarImage, Avatar } from "./ui/avatar";
 import {
   DropdownMenu,
@@ -13,7 +12,6 @@ import {
 } from "./ui/dropdown-menu";
 import { LogOut, Settings, User } from "lucide-react";
 import { signOut } from "next-auth/react";
-import { ModeToggle } from "./mode-toggle";
 
 export const UserAvatarButton = () => {
   const session = useSession();

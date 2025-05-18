@@ -1,10 +1,17 @@
-
-const ConversationIdPage = () => {
-    return <div>
-        <h1>
-            this my coversation Id page
-        </h1>
-    </div>
+interface ConversationIdPageProps {
+  params: {
+    conversationId: string;
+  };
 }
 
-export default ConversationIdPage
+const ConversationIdPage = async ({ params }: ConversationIdPageProps) => {
+  const conversationId = await (params.conversationId);
+
+  return (
+    <div className="w-full flex justify-center">
+      <h1>this my coversation Id page {conversationId}</h1>
+    </div>
+  );
+};
+
+export default ConversationIdPage;

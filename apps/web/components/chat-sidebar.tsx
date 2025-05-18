@@ -1,28 +1,52 @@
-"use client";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { useSession } from "next-auth/react";
-import { redirect } from "next/navigation";
+
 import { ModeToggle } from "./mode-toggle";
 import { UserAvatarButton } from "./user-avatar-button";
+import { NewChatButton } from "./new-chat-button";
+import { ChatList } from "./chat-list";
+import { auth } from "@/auth";
+import { ChatListProps } from "./chat-list";
 
-export function ChatSidebar() {
-  const session = useSession();
-  if (!session) {
-    return redirect("api/auth/signin");
+export async function ChatSidebar() {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  let conversationsList: ChatListProps[] = [];
+
+  try {
+    if (userId) {
+      const fetchedConversations = await prisma?.conversation.findMany({
+        where: {
+          userId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+      conversationsList = fetchedConversations as ChatListProps[];
+    }
+  } catch (e) {
+    console.log(e);
   }
 
   return (
     <Sidebar>
-      <SidebarHeader>Welcome to animated videos</SidebarHeader>
+      <SidebarHeader className="m-auto text-xl">Text2Scene</SidebarHeader>
+      <SidebarSeparator />
       <SidebarContent>
-        <SidebarGroup />
-        <SidebarGroup />
+        <SidebarGroup>
+          <NewChatButton />
+        </SidebarGroup>
+        <SidebarGroup>
+          <ChatList conversationList={conversationsList} />
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <ModeToggle />
