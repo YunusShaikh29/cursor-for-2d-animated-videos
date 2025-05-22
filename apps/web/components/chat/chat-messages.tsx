@@ -1,11 +1,18 @@
 "use client"; // This is a Client Component
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from "react";
 import { ChatWelcome } from "./chat-welcome";
-import { ChatInput } from './chat-input';
-import { useRouter } from 'next/navigation';
-import { Conversation as PrismaConversation, Message as PrismaMessage, Job as PrismaJob } from "../../../../packages/database/generated/prisma";
-import { cn } from '@/lib/utils';
+import { ChatInput } from "./chat-input";
+import { useRouter } from "next/navigation";
+import {
+  Conversation as PrismaConversation,
+  Message as PrismaMessage,
+  Job as PrismaJob,
+} from "../../../../packages/database/generated/prisma";
+import { cn } from "@/lib/utils";
+import { useSession } from "next-auth/react";
+import axios from "axios";
+import { createJobAndMessage } from "@/app/(main)/conversation/actions";
 
 interface ConversationWithMessages extends PrismaConversation {
   message: (PrismaMessage & {
@@ -18,10 +25,16 @@ interface ChatMessagesProps {
   conversationId: string;
 }
 
-export const ChatMessages = ({ conversation, conversationId }: ChatMessagesProps) => {
+export const ChatMessages = ({
+  conversation,
+  conversationId,
+}: ChatMessagesProps) => {
   const router = useRouter();
   const [inputValue, setInputValue] = useState("");
-  const [showWelcome, setShowWelcome] = useState(conversation.message.length === 0);
+  const [showWelcome, setShowWelcome] = useState(
+    conversation.message.length === 0
+  );
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleInputChange = (value: string) => {
@@ -30,31 +43,22 @@ export const ChatMessages = ({ conversation, conversationId }: ChatMessagesProps
   };
 
   const handleFormSubmit = async (values: { prompt: string }) => {
+    setIsLoading(true);
     try {
-      const response = await fetch(`/api/messages`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          conversationId: conversationId,
-          prompt: values.prompt,
-        }),
-      });
+      const response = await createJobAndMessage(
+        conversationId,
+        values.prompt.trim()
+      );
 
-      if (!response.ok) {
-        console.error("Failed to create message/job via API:", response.status, response.statusText);
-        return;
-      }
-
-      const result = await response.json();
-      console.log("Message/Job creation successful:", result);
+      // const result = await response.data;
+      console.log("Message/Job creation successful:", response);
       router.refresh();
       setInputValue("");
       setShowWelcome(false);
-
     } catch (error) {
       console.error("Error during message/job submission:", error);
+    }finally {
+      setIsLoading(false)
     }
   };
 
@@ -71,14 +75,21 @@ export const ChatMessages = ({ conversation, conversationId }: ChatMessagesProps
           </div>
         ) : (
           <div className="space-y-4 p-4">
-            {conversation.message.map(message => (
-              <div key={message.id} className={cn(
-                "p-3 rounded-lg max-w-[80%]",
-                message.role === 'user' ? "ml-auto bg-primary text-primary-foreground" : "mr-auto bg-muted"
-              )}>
+            {conversation.message.map((message) => (
+              <div
+                key={message.id}
+                className={cn(
+                  "p-3 rounded-lg max-w-[80%]",
+                  message.role === "user"
+                    ? "ml-auto bg-primary text-primary-foreground"
+                    : "mr-auto bg-muted"
+                )}
+              >
                 <p>{message.content}</p>
-                {message.role === 'user' && message.Job && (
-                  <div className="text-xs mt-1 opacity-80">Job Status: {message.Job.status}</div>
+                {message.role === "user" && message.Job && (
+                  <div className="text-xs mt-1 opacity-80">
+                    Job Status: {message.Job.status}
+                  </div>
                 )}
               </div>
             ))}

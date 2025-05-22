@@ -25,6 +25,9 @@ model User {
   // No sessions[] field, since we’re not using database-backed sessions
 
   conversations Conversation[]
+
+  dailyAnimationCount  Int  @default(0)
+  lastAnimationDate    DateTime? 
 }
 
 model Conversation {
