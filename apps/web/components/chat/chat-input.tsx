@@ -7,7 +7,7 @@ import { useEffect, useRef, useCallback } from "react";
 import { Form, FormControl, FormField, FormItem } from "../ui/form";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
-import { SendHorizonal, Loader2, ArrowBigUp } from "lucide-react";
+import { SendHorizonal, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const formSchema = z.object({

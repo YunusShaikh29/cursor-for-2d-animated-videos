@@ -33,7 +33,7 @@ app.post(
       console.log(
         "Job creation handler: missing parameters in the request body"
       );
-      return res.status(400).json({
+      res.status(400).json({
         error: "Missing required parameters",
       });
     }
@@ -105,8 +105,8 @@ app.post(
       });
 
 
-      await queue.add('animation', {jobId: transactionResult.job.id, userId})
-
+      const queueRes = await queue.add('animation', {jobId: transactionResult.job.id, userId, conversationId, prompt })
+      console.log(queueRes.data )
 
       res.status(201).json({
         message: transactionResult.message,
@@ -120,7 +120,7 @@ app.post(
       console.error("Job Creation Transaction Failed:", error);
 
       if (error.message.includes("Rate limit exceeded")) {
-        return res.status(429).json({ error: error.message });
+        res.status(429).json({ error: error.message });
       }
 
       res.status(500).json({ error: "Failed to create job." });
