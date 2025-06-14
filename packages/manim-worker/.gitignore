@@ -1,0 +1,25 @@
+# Node.js
+node_modules
+dist
+.env
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+python-env/
+__pycache__/
+*.pyc
+
+# Build artifacts
+.turbo
+*.tsbuildinfo
+
+# Output
+local_output/
+videos/
+media/
+
+# OS-specific
+.DS_Store
+Thumbs.db

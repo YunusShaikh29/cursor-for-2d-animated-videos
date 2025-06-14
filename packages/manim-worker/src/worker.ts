@@ -8,6 +8,7 @@ import * as os from "node:os";
 import { execa } from "execa";
 import { exec } from "node:child_process";
 import { PathLike } from "fs";
+import { PythonManimRunner } from "./python-runner";
 
 config();
 
@@ -25,6 +26,7 @@ interface DockerResult {
 }
 
 const openaiAPIKey = process.env.OPENAI_API_KEY;
+const pythonRunner = new PythonManimRunner();
 
 const openai = new OpenAI({
   apiKey: openaiAPIKey,
@@ -216,19 +218,16 @@ class ClientServerModel(Scene):
     });
 
     let tempDir: PathLike | null = null;
-    let outputFilePath = null;
+    let outputFilePath: string | null = null; // Make sure this is a string
 
     try {
       tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "manim-job-"));
+      console.log(`Worker: created temporary directory: ${tempDir}`);
 
-      const scriptFileName = `animation_script_${jobId}.py`;
       const outputFileName = `output_${jobId}.mp4`;
-      const scriptFilePath = path.join(tempDir, scriptFileName);
       outputFilePath = path.join(tempDir, outputFileName);
 
-      await fs.writeFile(scriptFilePath, manimScript);
-
-      let sceneClassName = "SceneFromPrompt"; //default
+      let sceneClassName = "SceneFromPrompt";
       const sceneNameRegex = /class (\w+)\(Scene\):?/;
       const sceneMatch = manimScript.match(sceneNameRegex);
 
@@ -237,112 +236,55 @@ class ClientServerModel(Scene):
         console.log(`Worker: Extracted Scene class name: ${sceneClassName}`);
       } else {
         console.warn(
-          `Worker Warning: Could not extract standard Scene class name from script for job ${jobId}. Assuming default: ${sceneClassName}`
+          `Worker Warning: Could not extract Scene class name for job ${jobId}.`
         );
-        // Decide if this is a fatal error or just a warning depending on expected LLM output reliability
-        // If fatal: throw new Error('Could not find main Scene class in generated script.');
       }
-      await new Promise<void>((resolve, reject) => {
-        const windowsPermsCmd = `icacls "${tempDir}" /grant Everyone:(F) /T`; // Grant full control to Everyone recursively
-        console.log(
-          `Worker: Attempting to set permissions: ${windowsPermsCmd}`
-        );
-        exec(windowsPermsCmd, (error, stdout, stderr) => {
-          if (error) {
-            console.error("Worker Error: Failed to set permissions:", error);
-            // Decide if this failure should stop the job
-            // reject(error); // Reject to stop the job
-            resolve(); // Resolve to continue despite permission command failure
-          } else {
-            console.log(
-              "Worker: Permissions set successfully (or command finished)."
-            );
-            resolve();
-          }
-        });
-      });
 
-      const dockerImage = "manimcommunity/manim:latest";
-
-      const manimCommandInsideDocker = [
-        "python",
-        "-m",
-        "manim",
-        "/scripts/" + scriptFileName,
+      console.log(`Worker: Running Manim via Python for job ${jobId}...`);
+      const pythonResult = await pythonRunner.runManimScript(
+        manimScript,
         sceneClassName,
-        "--format",
-        "mp4",
-        "--output_file",
-        "/scripts/" + outputFileName,
-        "-ql",
-      ];
-
-      const dockerArgs = [
-        "run",
-        "--rm",
-        "-v",
-        `${tempDir}:/scripts`,
-        dockerImage,
-        ...manimCommandInsideDocker,
-      ];
-
-      const dockerCommand = ["docker", ...dockerArgs].join(" ");
-      console.log(`Worker: Running docker command: ${dockerCommand}`);
-
-      const dockerResult = await new Promise<DockerResult>(
-        (resolve, reject) => {
-          exec(dockerCommand, (error, stdout, stderr) => {
-            if (error) {
-              console.error(`Worker: Docker execution error: ${error.message}`);
-              reject(error);
-              return;
-            }
-            resolve({ stdout, stderr, exitCode: error ? error : 0 });
-          });
-        }
+        outputFilePath,
+        "low"
       );
 
-      console.log(
-        `Worker: Docker command finished for job ${jobId}. Exit code: ${dockerResult.exitCode}`
-      );
-      if (dockerResult.stdout) {
-        console.log("Worker: Docker stdout:", dockerResult.stdout);
-      }
-      if (dockerResult.stderr) {
-        console.warn("Worker: Docker stderr:", dockerResult.stderr);
-      }
+      if (!pythonResult.success) {
+        const errorMessage = `Python manim execution failed: ${pythonResult.error || "Unknown python error"}`;
+        console.log(`Worker Error for job ${jobId}:`, errorMessage);
 
-      const outputExists = await fs
-        .stat(outputFilePath)
-        .then(() => true)
-        .catch(() => false);
-      if (dockerResult.exitCode !== 0 || !outputExists) {
-        const errorMsg = `Docker Manim failed. Exit code: ${dockerResult.exitCode}. Output file found: ${outputExists}. Stderr: ${dockerResult.stderr || "N/A"}`;
-        console.error(`Worker Error: ${errorMsg}`);
-        // Update job status to failed due to Docker error
         await prisma.job.update({
           where: { id: jobId },
-          data: { status: "failed", error: `Manim render failed: ${errorMsg}` },
+          data: {
+            status: "failed",
+            error: errorMessage,
+          },
         });
-        throw new Error(errorMsg); // Re-throw
+        throw new Error(errorMessage);
       }
-    } catch (dockerRunError: any) {
-      console.error(
-        `Worker Error: Failed during Docker run phase for job ${jobId}.`,
-        dockerRunError
+
+      console.log(
+        `Worker: Python Manim completed successfully for job ${jobId}`
       );
-      const errorMsg = `Failed to run Manim render: ${dockerRunError.message || "Unknown error"}`;
+      console.log(`Worker: Output file size: ${pythonResult.fileSize} bytes`);
+    } catch (runError: any) {
+      // to catch errors from the Python execution or other issues
+      console.error(
+        `Worker Error: Failed during Python run phase for job ${jobId}.`,
+        runError
+      );
+      const errorMsg = `Failed to run Manim render: ${
+        runError.message || "Unknown error"
+      }`;
       await prisma.job.update({
         where: { id: jobId },
         data: { status: "failed", error: errorMsg },
       });
-      throw dockerRunError; // Re-throw
-    } finally {
-      if (tempDir) {
-        console.log(`Worker: Cleaning up temporary directory ${tempDir}`);
-        await fs
-          .rm(tempDir, { recursive: true, force: true })
-          .catch((err) => console.error("Worker Cleanup Error:", err));
+      throw runError; // Re-throw
+    }finally {
+      if(tempDir){
+        console.log(`Worker: cleaning up the temp directory ${tempDir}`)
+
+        await fs.rm(tempDir, {recursive: true, force: true}).catch((error) => console.log("Cleanup error", error))
       }
     }
 

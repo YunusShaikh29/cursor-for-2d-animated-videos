@@ -1,1 +1,1 @@
-{"root":["./src/worker.ts"],"version":"5.8.2"}
+{"root":["./src/python-runner.ts","./src/worker.ts"],"version":"5.8.2"}
