@@ -337,14 +337,15 @@ class ClientServerModel(Scene):
         data: { status: "failed", error: errorMsg },
       });
       throw dockerRunError; // Re-throw
-    } finally {
-      if (tempDir) {
-        console.log(`Worker: Cleaning up temporary directory ${tempDir}`);
-        await fs
-          .rm(tempDir, { recursive: true, force: true })
-          .catch((err) => console.error("Worker Cleanup Error:", err));
-      }
-    }
+    } 
+    // finally {
+    //   if (tempDir) {
+    //     console.log(`Worker: Cleaning up temporary directory ${tempDir}`);
+    //     await fs
+    //       .rm(tempDir, { recursive: true, force: true })
+    //       .catch((err) => console.error("Worker Cleanup Error:", err));
+    //   }
+    // }
 
     let permanentOutputPath = null;
 
@@ -384,6 +385,13 @@ class ClientServerModel(Scene):
         });
         throw new Error(errorMsg);
       }
+    }
+
+    if (tempDir) {
+      console.log(`Worker: Cleaning up temporary directory ${tempDir}`);
+      await fs
+        .rm(tempDir, { recursive: true, force: true })
+        .catch((err) => console.error("Worker Cleanup Error:", err));
     }
 
     console.log(`Worker: Updating job ${jobId} status to complete.`);
