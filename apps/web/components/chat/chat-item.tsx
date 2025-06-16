@@ -7,6 +7,7 @@ import { Loader2, Play, Download, AlertCircle, Clock, CheckCircle2 } from 'lucid
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { LazyLoad } from '../lazy-load';
 
 interface MessageWithJob extends PrismaMessage {
   Job: PrismaJob | null;
@@ -120,7 +121,9 @@ export const ChatItem = ({ message, index }: ChatItemProps) => {
                       const link = document.createElement('a');
                       link.href = job.videoUrl!;
                       link.download = `animation-${job.id}.mp4`;
+                      document.body.appendChild(link)
                       link.click();
+                      document.body.removeChild(link)
                     }}
                   >
                     <Download className="h-3 w-3 mr-1" />
@@ -151,15 +154,7 @@ export const ChatItem = ({ message, index }: ChatItemProps) => {
                   transition={{ duration: 0.3 }}
                   className="relative group"
                 >
-                  <video
-                    src={job.videoUrl}
-                    controls
-                    className="w-full rounded-lg border shadow-sm bg-black"
-                    preload="metadata"
-                    poster="" // You can add a poster image if available
-                  >
-                    Your browser does not support the video tag.
-                  </video>
+                  <LazyLoad src={job.videoUrl}/>
                   
                   {/* Video Overlay */}
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors rounded-lg pointer-events-none" />
@@ -176,7 +171,7 @@ export const ChatItem = ({ message, index }: ChatItemProps) => {
                     </p>
                     {job.error && (
                       <p className="text-xs text-red-600 dark:text-red-400">
-                       {job.error}
+                       {job.error.length > 50 ? "Failed to create the video!": job.error}
                       </p>
                     )}
                   </div>

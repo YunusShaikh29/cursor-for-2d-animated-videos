@@ -19,7 +19,7 @@ export default async function Layout({
     <SidebarProvider>
       <ChatSidebar />
       <main className="flex-grow overflow-y-auto">
-        <SidebarTrigger className="fixed"/>
+        <SidebarTrigger className="fixed w-8 h-8 cursor-pointer"/>
         {children}
       </main>
     </SidebarProvider>
