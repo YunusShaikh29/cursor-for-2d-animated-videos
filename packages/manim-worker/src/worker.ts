@@ -8,6 +8,7 @@ import * as os from "node:os";
 import { execa } from "execa";
 import { exec } from "node:child_process";
 import { PathLike } from "fs";
+import {Client as MinioClient} from "minio"
 
 config();
 
@@ -349,6 +350,19 @@ class ClientServerModel(Scene):
 
     let permanentOutputPath = null;
 
+    if(process.env.MINIO_PORT === "")return
+
+    const minioClient = new MinioClient({
+      endPoint: process.env.MINIO_ENDPOINT || "127.0.0.1",
+      port: Number(process.env.MINIO_PORT) || 9000,
+      useSSL: false,
+      accessKey: process.env.MINIO_ROOT_USER || 'minioadmin',
+      secretKey: process.env.MINIO_ROOT_PASSWORD || 'minioadmin123'
+    })
+
+    const bucketName = 'video-assets'
+
+
     if (
       outputFilePath &&
       (await fs
@@ -358,21 +372,29 @@ class ClientServerModel(Scene):
     ) {
       try {
         console.log(`Worker: Starting video copy phase for job id ${jobId}`);
-        const localOutputDir = path.join(__dirname, "local_output"); // Example path relative to worker's entry file
-        const permanentOutputFileName = `animation_${jobId}.mp4`;
-        permanentOutputPath = path.join(
-          localOutputDir,
-          permanentOutputFileName
-        );
+        // const localOutputDir = path.join(__dirname, "local_output"); // Example path relative to worker's entry file
+        // const permanentOutputFileName = `animation_${jobId}.mp4`;
+        // permanentOutputPath = path.join(
+        //   localOutputDir,
+        //   permanentOutputFileName
+        // );
 
-        console.log(
-          `Worker: Copying output video from ${outputFilePath} to ${permanentOutputPath}`
-        );
-        // Ensure the local output directory exists
-        await fs.mkdir(localOutputDir, { recursive: true });
-        // Copy the file
-        await fs.copyFile(outputFilePath, permanentOutputPath);
-        console.log(`Worker: Video copied successfully.`);
+        // console.log(
+        //   `Worker: Copying output video from ${outputFilePath} to ${permanentOutputPath}`
+        // );
+        // // Ensure the local output directory exists
+        // await fs.mkdir(localOutputDir, { recursive: true });
+        // // Copy the file
+        // await fs.copyFile(outputFilePath, permanentOutputPath);
+        // console.log(`Worker: Video copied successfully.`);
+
+        const minioFileName = `animation_${jobId}.mp4`
+        await minioClient.fPutObject(bucketName, minioFileName, outputFilePath)
+        console.log(`Uploaded video to MinIO bucket "${bucketName}" as ${minioFileName}`);
+
+        const presignedUrl = await minioClient.presignedGetObject(bucketName, minioFileName, 604800)
+        permanentOutputPath = presignedUrl
+
       } catch (copyError: any) {
         console.error(
           `Worker Error: Failed to copy output video for job ${jobId}.`,
