@@ -27,7 +27,7 @@ export async function ChatSidebar() {
           userId,
         },
         orderBy: {
-          createdAt: "desc",
+          updatedAt: "desc",
         },
       });
       conversationsList = fetchedConversations as ChatListProps[];
