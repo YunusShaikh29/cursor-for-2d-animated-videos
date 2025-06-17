@@ -1,16 +1,18 @@
-'use client';
+"use client";
 
-import { formatDistanceToNow } from 'date-fns';
-import { MessageSquare, MoreVertical, Edit3, Trash2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from "date-fns";
+import { MessageSquare, MoreVertical, Edit3, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useRouter, usePathname } from 'next/navigation';
-import { useState } from 'react';
+} from "@/components/ui/dropdown-menu";
+import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
+import axios from "axios";
+import { Input } from "./ui/input";
 
 export interface ChatListProps {
   id: string;
@@ -28,6 +30,8 @@ export const ChatList = ({
   const router = useRouter();
   const pathname = usePathname();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
 
   if (conversationList.length === 0) {
     return (
@@ -37,14 +41,52 @@ export const ChatList = ({
     );
   }
 
-  const handleRename = (conversationId: string) => {
-    console.log('Rename conversation:', conversationId);
-    // TODO: Implement rename functionality
+  const handleRename = (conversationId: string, currentTitle: string) => {
+    setRenamingId(conversationId);
+    setRenameValue(currentTitle || "");
   };
 
-  const handleDelete = (conversationId: string) => {
-    console.log('Delete conversation:', conversationId);
-    // TODO: Implement delete functionality
+  const handleRenameSubmit = async (conversationId: string, currentConversationTitle: string) => {
+    if (!renameValue.trim()) return;
+    if(renameValue.trim() === currentConversationTitle){
+      setRenameValue("")
+      setRenamingId(null)
+      return
+    }
+
+    try {
+      const res = await axios.patch(`/api/conversation/${conversationId}`, {
+        newTitle: renameValue.trim(),
+      });
+      setRenameValue("");
+      setRenamingId(null);
+      router.refresh();
+      return res.data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDelete = async (conversationId: string) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this conversation? This will delete all the videos in this conversation and this is irreversible!"
+      )
+    ) {
+      return;
+    }
+
+    try {
+      const response = await axios.delete(
+        `/api/conversation/${conversationId}`
+      );
+      if (response.status === 204) {
+        router.refresh();
+      }
+    } catch (error) {
+      // alert("Error deleting conversation.");
+      console.error(error);
+    }
   };
 
   return (
@@ -61,18 +103,37 @@ export const ChatList = ({
               "relative w-full flex items-center gap-3 rounded-lg p-3 text-sm transition-all",
               "hover:bg-accent/80 focus-visible:bg-accent",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-              pathname.includes(conversation.id) 
-                ? "bg-accent text-accent-foreground" 
+              pathname.includes(conversation.id)
+                ? "bg-accent text-accent-foreground"
                 : "text-foreground hover:text-accent-foreground"
             )}
             onClick={() => router.push(`/conversation/${conversation.id}`)}
+            disabled={renamingId === conversation.id}
           >
             <MessageSquare className="h-4 w-4 shrink-0 text-muted-foreground" />
             <div className="flex-1 min-w-0 text-left">
               <div className="flex flex-col gap-1">
-                <span className="truncate font-medium text-sm">
-                  {conversation.title || 'New conversation'}
-                </span>
+                {renamingId === conversation.id ? (
+                  <Input
+                    value={renameValue}
+                    autoFocus
+                    onChange={(e) => setRenameValue(e.target.value)}
+                    onBlur={() => handleRenameSubmit(conversation.id, conversation.title || "")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        handleRenameSubmit(conversation.id, conversation.title || "");
+                      } else if (e.key === "Escape") {
+                        setRenameValue("");
+                        setRenamingId(null);
+                      }
+                    }}
+                    className="text-sm font-medium"
+                  />
+                ) : (
+                  <span className="truncate text-sm font-medium">
+                    {conversation.title || "New Conversation"}
+                  </span>
+                )}
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(conversation.updatedAt, {
                     addSuffix: true,
@@ -109,8 +170,8 @@ export const ChatList = ({
                   <span className="sr-only">More options</span>
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent 
-                align="end" 
+              <DropdownMenuContent
+                align="end"
                 side="right"
                 className="w-48 animate-in slide-in-from-left-2 duration-200"
                 sideOffset={8}
@@ -118,7 +179,7 @@ export const ChatList = ({
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleRename(conversation.id);
+                    handleRename(conversation.id, conversation.title || "");
                   }}
                   className="flex items-center gap-2 cursor-pointer"
                 >

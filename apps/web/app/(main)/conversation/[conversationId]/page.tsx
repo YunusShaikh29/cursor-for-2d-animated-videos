@@ -56,7 +56,7 @@ const ConversationIdPage = async ({ params }: ConversationIdPageProps) => {
       include: {
         message: {
           // Include messages (relation name is 'message' in your schema)
-          orderBy: { createdAt: "asc" }, // Order messages chronologically
+          orderBy: { updatedAt: "asc" }, // Order messages chronologically
           include: {
             // Include Job relation nested inside messages
             Job: true, // Make sure 'Job' matches the relation name in your schema
