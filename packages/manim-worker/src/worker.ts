@@ -3,12 +3,12 @@ import { prisma } from "database/index";
 import { config } from "dotenv";
 import OpenAI from "openai";
 import * as fs from "node:fs/promises";
-import * as path from "node:path"; // Needed for path joining
+import * as path from "node:path";
 import * as os from "node:os";
 import { execa } from "execa";
 import { exec } from "node:child_process";
 import { PathLike } from "fs";
-import {Client as MinioClient} from "minio"
+import { Client as MinioClient } from "minio";
 
 config();
 
@@ -173,7 +173,7 @@ class ClientServerModel(Scene):
           throw new Error("LLM returned empty content.");
         }
 
-        const codeBlockRegex = /```python\s*([\s\S]*?)\s*```/; //regex to find our python code from the generated content.
+        const codeBlockRegex = /```python\s*([\s\S]*?)\s*```/;
         const match = generatedContent.match(codeBlockRegex);
 
         if (match && match[1]) {
@@ -203,7 +203,7 @@ class ClientServerModel(Scene):
           where: { id: jobId },
           data: { status: "failed", error: llmError as string },
         });
-        throw llmError; // Re-throw the specific error for BullMQ
+        throw llmError;
       }
     }
 
@@ -240,20 +240,17 @@ class ClientServerModel(Scene):
         console.warn(
           `Worker Warning: Could not extract standard Scene class name from script for job ${jobId}. Assuming default: ${sceneClassName}`
         );
-        // Decide if this is a fatal error or just a warning depending on expected LLM output reliability
-        // If fatal: throw new Error('Could not find main Scene class in generated script.');
       }
       await new Promise<void>((resolve, reject) => {
-        const windowsPermsCmd = `icacls "${tempDir}" /grant Everyone:(F) /T`; // Grant full control to Everyone recursively
+        const windowsPermsCmd = `icacls "${tempDir}" /grant Everyone:(F) /T`;
         console.log(
           `Worker: Attempting to set permissions: ${windowsPermsCmd}`
         );
         exec(windowsPermsCmd, (error, stdout, stderr) => {
           if (error) {
             console.error("Worker Error: Failed to set permissions:", error);
-            // Decide if this failure should stop the job
-            // reject(error); // Reject to stop the job
-            resolve(); // Resolve to continue despite permission command failure
+
+            resolve();
           } else {
             console.log(
               "Worker: Permissions set successfully (or command finished)."
@@ -320,12 +317,11 @@ class ClientServerModel(Scene):
       if (dockerResult.exitCode !== 0 || !outputExists) {
         const errorMsg = `Docker Manim failed. Exit code: ${dockerResult.exitCode}. Output file found: ${outputExists}. Stderr: ${dockerResult.stderr || "N/A"}`;
         console.error(`Worker Error: ${errorMsg}`);
-        // Update job status to failed due to Docker error
         await prisma.job.update({
           where: { id: jobId },
           data: { status: "failed", error: `Manim render failed: ${errorMsg}` },
         });
-        throw new Error(errorMsg); // Re-throw
+        throw new Error(errorMsg);
       }
     } catch (dockerRunError: any) {
       console.error(
@@ -337,31 +333,22 @@ class ClientServerModel(Scene):
         where: { id: jobId },
         data: { status: "failed", error: errorMsg },
       });
-      throw dockerRunError; // Re-throw
-    } 
-    // finally {
-    //   if (tempDir) {
-    //     console.log(`Worker: Cleaning up temporary directory ${tempDir}`);
-    //     await fs
-    //       .rm(tempDir, { recursive: true, force: true })
-    //       .catch((err) => console.error("Worker Cleanup Error:", err));
-    //   }
-    // }
+      throw dockerRunError;
+    }
 
     let permanentOutputPath = null;
 
-    if(process.env.MINIO_PORT === "")return
+    if (process.env.MINIO_PORT === "") return;
 
     const minioClient = new MinioClient({
       endPoint: process.env.MINIO_ENDPOINT || "127.0.0.1",
       port: Number(process.env.MINIO_PORT) || 9000,
       useSSL: false,
-      accessKey: process.env.MINIO_ROOT_USER || 'minioadmin',
-      secretKey: process.env.MINIO_ROOT_PASSWORD || 'minioadmin123'
-    })
+      accessKey: process.env.MINIO_ROOT_USER || "minioadmin",
+      secretKey: process.env.MINIO_ROOT_PASSWORD || "minioadmin123",
+    });
 
-    const bucketName = 'video-assets'
-
+    const bucketName = "video-assets";
 
     if (
       outputFilePath &&
@@ -388,13 +375,18 @@ class ClientServerModel(Scene):
         // await fs.copyFile(outputFilePath, permanentOutputPath);
         // console.log(`Worker: Video copied successfully.`);
 
-        const minioFileName = `animation_${jobId}.mp4`
-        await minioClient.fPutObject(bucketName, minioFileName, outputFilePath)
-        console.log(`Uploaded video to MinIO bucket "${bucketName}" as ${minioFileName}`);
+        const minioFileName = `animation_${jobId}.mp4`;
+        await minioClient.fPutObject(bucketName, minioFileName, outputFilePath);
+        console.log(
+          `Uploaded video to MinIO bucket "${bucketName}" as ${minioFileName}`
+        );
 
-        const presignedUrl = await minioClient.presignedGetObject(bucketName, minioFileName, 604800)
-        permanentOutputPath = presignedUrl
-
+        const presignedUrl = await minioClient.presignedGetObject(
+          bucketName,
+          minioFileName,
+          604800
+        );
+        permanentOutputPath = presignedUrl;
       } catch (copyError: any) {
         console.error(
           `Worker Error: Failed to copy output video for job ${jobId}.`,
@@ -420,8 +412,8 @@ class ClientServerModel(Scene):
     await prisma.job.update({
       where: { id: jobId },
       data: {
-        status: "complete", // Use your STATUS enum value
-        videoUrl: permanentOutputPath, // Save the local path
+        status: "complete",
+        videoUrl: permanentOutputPath,
       },
     });
   },

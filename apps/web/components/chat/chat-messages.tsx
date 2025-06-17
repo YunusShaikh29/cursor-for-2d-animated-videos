@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"; // This is a Client Component
 
 import { useState, useEffect, useRef } from "react";

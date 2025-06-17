@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
 import { prisma } from "database/index";

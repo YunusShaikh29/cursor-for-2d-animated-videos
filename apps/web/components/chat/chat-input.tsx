@@ -1,14 +1,14 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, ControllerRenderProps } from "react-hook-form";
-import { useEffect, useRef, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { useEffect, useRef } from "react";
 import { Form, FormControl, FormField, FormItem } from "../ui/form";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { SendHorizonal, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   prompt: z.string().min(1),
@@ -25,7 +25,6 @@ interface ChatInputProps {
 }
 
 export const ChatInput = ({ 
-  conversationId, 
   onSubmit, 
   onInputChange, 
   isLoading,
