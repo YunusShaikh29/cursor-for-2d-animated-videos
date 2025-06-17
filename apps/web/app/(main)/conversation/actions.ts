@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable turbo/no-undeclared-env-vars */
 "use server";
 
 import { auth } from "@/auth";

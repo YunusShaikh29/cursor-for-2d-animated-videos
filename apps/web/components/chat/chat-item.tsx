@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { Message as PrismaMessage, Job as PrismaJob } from "../../../../packages/database/generated/prisma";
 import { cn } from '@/lib/utils';
-import { Loader2, Play, Download, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
+import { Loader2, Download, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
