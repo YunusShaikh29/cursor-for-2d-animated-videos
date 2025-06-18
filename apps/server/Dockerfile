@@ -3,7 +3,7 @@ FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Install pnpm and turbo
-RUN npm install -g pnpm turbo
+RUN npm install -g pnpm@9.0.0 turbo
 
 # Copy root manifests and install all dependencies
 COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
