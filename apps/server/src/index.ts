@@ -2,8 +2,8 @@ import express from "express";
 import { prisma } from "database/index";
 import { Jwt } from "jsonwebtoken";
 import cors from "cors";
-import { serverAuthMiddleware } from "./serverAuthMiddleware.ts";
-import { rateLimitingMiddleware } from "./rateLimitingMiddleware.ts";
+import { serverAuthMiddleware } from "../dist/serverAuthMiddleware.js";
+import { rateLimitingMiddleware } from "../dist/rateLimitingMiddleware.js";
 import { Queue } from "bullmq";
 
 
@@ -39,7 +39,7 @@ app.post(
     }
 
     try {
-      const transactionResult = await prisma.$transaction(async (tx) => {
+      const transactionResult = await prisma.$transaction(async (tx: any) => {
         const userForTransaction = await tx.user.findUnique({
           where: {
             id: userId,

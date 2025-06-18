@@ -3,7 +3,7 @@
   "compilerOptions": {
       "rootDir": "./src",
       "outDir": "./dist",
-      "allowImportingTsExtensions": true,
-      "noEmit": true
+      "moduleResolution": "bundler",
+      "module": "es2020"
   }
 }
