@@ -6,19 +6,17 @@ import { ChatWelcome } from "./chat-welcome";
 import { ChatInput } from "./chat-input";
 import { useRouter } from "next/navigation";
 import {
-  Conversation as PrismaConversation,
-  Message as PrismaMessage,
-  Job as PrismaJob,
-} from "../../../../packages/database/generated/prisma";
-import { cn } from "@/lib/utils";
+  Conversation,
+  Message,
+  Job,
+} from "@/lib/types";
 import axios from "axios";
 import { createJobAndMessage } from "@/app/(main)/conversation/actions";
-import { Loader2 } from "lucide-react";
 import { ChatItem } from "./chat-item";
 
-interface ConversationWithMessages extends PrismaConversation {
-  message: (PrismaMessage & {
-    Job: PrismaJob | null;
+interface ConversationWithMessages extends Conversation {
+  message: (Message & {
+    Job: Job | null;
   })[];
 }
 
