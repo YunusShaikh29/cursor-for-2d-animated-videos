@@ -5,15 +5,16 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -b",
-    "start": "tsx watch src/worker.ts",
-    "dev": "pnpm run build && pnpm run start"
+    "dev": "tsx watch src/worker.ts",
+    "start": "pnpm run build && node dist/worker.js",
+     "lint": "eslint . --ext .ts" 
   },
   "dependencies": {
     "bullmq": "^5.53.0",
     "dotenv": "^16.5.0",
     "execa": "^9.5.3",
     "minio": "^8.0.5",
-    "openai": "^4.103.0"
+    "openai": "^4.103.0"  
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
