@@ -13,7 +13,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Generate Prisma Client
-RUN pnpm --filter database exec prisma generate
+RUN pnpm --filter database run db:generate
 
 # Build the specific application and its dependencies
 RUN pnpm turbo run build --filter=manim-worker...

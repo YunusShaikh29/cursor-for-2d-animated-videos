@@ -14,7 +14,7 @@ COPY . .
 
 # Generate Prisma Client
 # This ensures the client is available for the build
-RUN pnpm --filter database exec prisma generate
+RUN pnpm --filter database run db:generate
 
 # Build the specific application and its dependencies
 RUN pnpm turbo run build --filter=http...
