@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Message as PrismaMessage, Job as PrismaJob } from "../../../../packages/database/generated/prisma";
+import { Message, Job } from "@/lib/types";
 import { cn } from '@/lib/utils';
 import { Loader2, Download, AlertCircle, Clock, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -9,8 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { LazyLoad } from '../lazy-load';
 
-interface MessageWithJob extends PrismaMessage {
-  Job: PrismaJob | null;
+interface MessageWithJob extends Message {
+  Job: Job | null;
 }
 
 interface ChatItemProps {
