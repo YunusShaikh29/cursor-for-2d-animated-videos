@@ -15,9 +15,7 @@ COPY . .
 RUN pnpm --filter database run db:generate
 
 RUN pnpm --filter database run build
-
 RUN pnpm --filter shared run build
-
 RUN pnpm --filter http run build
 
 FROM node:18-alpine AS runner
@@ -29,11 +27,13 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/pnpm-lock.yaml ./
 
-COPY --from=builder /app/apps/http/dist ./apps/http/dist
 COPY --from=builder /app/apps/http/package.json ./apps/http/
+COPY --from=builder /app/packages/database/package.json ./packages/database/
+COPY --from=builder /app/packages/shared/package.json ./packages/shared/
+
+COPY --from=builder /app/apps/http/dist ./apps/http/dist
 
 COPY --from=builder /app/packages/database ./packages/database
-
 COPY --from=builder /app/packages/shared ./packages/shared
 
 RUN pnpm install --prod --frozen-lockfile
