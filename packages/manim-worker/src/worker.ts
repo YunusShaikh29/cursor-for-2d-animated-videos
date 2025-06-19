@@ -8,7 +8,7 @@ import * as os from "node:os";
 import { execa } from "execa";
 import { exec } from "node:child_process";
 import { PathLike } from "fs";
-import { Client as MinioClient } from "minio";
+import { storageClient } from "shared/storage"; // Updated import
 
 config();
 
@@ -68,7 +68,7 @@ const worker = new Worker(
 
     let manimScript = null;
     const BYPASS_LLM = process.env.BYPASS_LLM_CALL === "true";
-    const modelToUse = "gpt-4.o-mini";
+    const modelToUse = "gpt-4o-mini";
 
     console.log(
       `Worker: Calling OpenAI API (${modelToUse}) for job ${jobId}...`
@@ -76,7 +76,6 @@ const worker = new Worker(
 
     if (BYPASS_LLM) {
       manimScript = `
-            
 from manim import *
 
 class ClientServerModel(Scene):
@@ -106,7 +105,7 @@ class ClientServerModel(Scene):
 
         # Arrow: Request from Server to Database
         req_arrow2 = Arrow(
-            server_box.get_right(), db_box.get_left(),      buff=0.1, color=WHITE
+            server_box.get_right(), db_box.get_left(), buff=0.1, color=WHITE
         )
         req_label2 = Text("request", font_size=28).next_to(req_arrow2, UP)
         self.play(
@@ -128,7 +127,6 @@ class ClientServerModel(Scene):
         data_label = Text("data", font_size=28).next_to(data_arrow, UP)
         self.play(GrowArrow(data_arrow), FadeIn(data_label), run_time=1.2)
         self.wait(0.6)
-
         `;
     } else {
       if (!openai.apiKey) {
@@ -241,6 +239,7 @@ class ClientServerModel(Scene):
           `Worker Warning: Could not extract standard Scene class name from script for job ${jobId}. Assuming default: ${sceneClassName}`
         );
       }
+      
       await new Promise<void>((resolve, reject) => {
         const windowsPermsCmd = `icacls "${tempDir}" /grant Everyone:(F) /T`;
         console.log(
@@ -249,7 +248,6 @@ class ClientServerModel(Scene):
         exec(windowsPermsCmd, (error, stdout, stderr) => {
           if (error) {
             console.error("Worker Error: Failed to set permissions:", error);
-
             resolve();
           } else {
             console.log(
@@ -338,61 +336,25 @@ class ClientServerModel(Scene):
 
     let permanentOutputPath = null;
 
-    if (process.env.MINIO_PORT === "") return;
-
-    const minioClient = new MinioClient({
-      endPoint: process.env.MINIO_ENDPOINT || "127.0.0.1",
-      port: Number(process.env.MINIO_PORT) || 9000,
-      useSSL: false,
-      accessKey: process.env.MINIO_ROOT_USER || "minioadmin",
-      secretKey: process.env.MINIO_ROOT_PASSWORD || "minioadmin123",
-    });
-
-    const bucketName = "video-assets";
-
-    if (
-      outputFilePath &&
-      (await fs
-        .stat(outputFilePath)
-        .then(() => true)
-        .catch(() => false))
-    ) {
+    // Upload video to storage (MinIO locally, S3 in production)
+    if (outputFilePath && (await fs.stat(outputFilePath).then(() => true).catch(() => false))) {
       try {
-        console.log(`Worker: Starting video copy phase for job id ${jobId}`);
-        // const localOutputDir = path.join(__dirname, "local_output"); // Example path relative to worker's entry file
-        // const permanentOutputFileName = `animation_${jobId}.mp4`;
-        // permanentOutputPath = path.join(
-        //   localOutputDir,
-        //   permanentOutputFileName
-        // );
-
-        // console.log(
-        //   `Worker: Copying output video from ${outputFilePath} to ${permanentOutputPath}`
-        // );
-        // // Ensure the local output directory exists
-        // await fs.mkdir(localOutputDir, { recursive: true });
-        // // Copy the file
-        // await fs.copyFile(outputFilePath, permanentOutputPath);
-        // console.log(`Worker: Video copied successfully.`);
-
-        const minioFileName = `animation_${jobId}.mp4`;
-        await minioClient.fPutObject(bucketName, minioFileName, outputFilePath);
-        console.log(
-          `Uploaded video to MinIO bucket "${bucketName}" as ${minioFileName}`
-        );
-
-        const presignedUrl = await minioClient.presignedGetObject(
-          bucketName,
-          minioFileName,
-          604800
-        );
-        permanentOutputPath = presignedUrl;
-      } catch (copyError: any) {
+        console.log(`Worker: Starting video upload phase for job id ${jobId}`);
+        console.log(`Worker: Using storage provider: ${storageClient.getProvider()}`);
+        
+        const fileName = `animation_${jobId}.mp4`;
+        const videoUrl = await storageClient.uploadFile(fileName, outputFilePath);
+        
+        console.log(`Worker: Uploaded video to ${storageClient.getProvider()}: ${fileName}`);
+        console.log(`Worker: Video URL: ${videoUrl}`);
+        
+        permanentOutputPath = videoUrl;
+      } catch (uploadError: any) {
         console.error(
-          `Worker Error: Failed to copy output video for job ${jobId}.`,
-          copyError
+          `Worker Error: Failed to upload video for job ${jobId}.`,
+          uploadError
         );
-        const errorMsg = `Failed to save video file: ${copyError.message}`;
+        const errorMsg = `Failed to upload video: ${uploadError.message}`;
         await prisma.job.update({
           where: { id: jobId },
           data: { status: "failed", error: errorMsg },
@@ -401,6 +363,7 @@ class ClientServerModel(Scene):
       }
     }
 
+    // Cleanup temp directory
     if (tempDir) {
       console.log(`Worker: Cleaning up temporary directory ${tempDir}`);
       await fs
@@ -417,11 +380,11 @@ class ClientServerModel(Scene):
       },
     });
   },
-
   {
     connection: {
-      host: "localhost",
-      port: 6379,
+      host: process.env.REDIS_HOST || "localhost",
+      port: Number(process.env.REDIS_PORT) || 6379,
+      password: process.env.REDIS_PASSWORD || undefined,
     },
   }
 );

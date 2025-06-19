@@ -19,7 +19,8 @@
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
-    "database": "workspace:*"
+    "database": "workspace:*",
+    "shared": "workspace:*"
   },
   "keywords": [],
   "author": "",
