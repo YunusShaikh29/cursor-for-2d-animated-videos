@@ -10,7 +10,7 @@
     "db:migrate:dev": "prisma migrate dev", 
     "db:migrate:deploy": "prisma migrate deploy", 
     "db:studio": "prisma studio",
-    "build": "tsc"
+    "build": "tsc -b"
   },
   "exports": {
     ".": {
