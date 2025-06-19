@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "database/index";
 import { auth } from "@/auth";
-import { minioClient } from "@/lib/minio";
+import { storageClient } from "shared/storage";
 
 interface conversationIdProps {
   params: {
@@ -85,16 +85,20 @@ export async function DELETE(req: Request, { params }: conversationIdProps) {
       },
     });
 
-    //deleting videos from minio
-    for (const job of jobs) {
-      if (job.videoUrl) {
-        try {
-          const url = new URL(job.videoUrl);
-          const objectName = url.pathname.replace(/^\/video-assets\//, "");
-          await minioClient.removeObject("video-assets", objectName);
-        } catch (error) {
-          console.error("Failed to delete video from MinIO:", error);
-        }
+    const videoUrls = jobs
+      .map(job => job.videoUrl)
+      .filter((url): url is string => url !== null);
+
+    // Delete videos from storage
+    if (videoUrls.length > 0) {
+      const deleteResults = await storageClient.deleteFilesByUrls(videoUrls);
+      
+      if (deleteResults.failed.length > 0) {
+        console.error(`Failed to delete ${deleteResults.failed.length} videos:`, deleteResults.failed);
+      }
+      
+      if (deleteResults.success.length > 0) {
+        console.log(`Successfully deleted ${deleteResults.success.length} videos`);
       }
     }
 
@@ -104,6 +108,7 @@ export async function DELETE(req: Request, { params }: conversationIdProps) {
         userId: session.user.id,
       },
     });
+
     return new NextResponse(null, { status: 204 });
   } catch (error) {
     console.error("[CONVERSATION_ID_DELETE]", error);

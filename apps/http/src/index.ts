@@ -9,10 +9,13 @@ import { Queue } from "bullmq";
 
 const queue = new Queue('animation-job-queue', {
     connection: {
-        host: 'localhost',
-        port: 6379
+      host: process.env.REDIS_HOST || "localhost",
+      port: Number(process.env.REDIS_PORT) || 6379,
+       password: process.env.REDIS_PASSWORD || undefined,
     }
 })
+
+const PORT = process.env.PORT || 8080
 
 const app = express();
 app.use(express.json());
@@ -128,6 +131,6 @@ app.post(
   }
 );
 
-app.listen(8080, () => {
-  console.log("server listening on port 8080");
+app.listen(PORT, () => {
+  console.log("server listening on PORT: ", PORT);
 });
