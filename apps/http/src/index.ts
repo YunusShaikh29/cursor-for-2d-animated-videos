@@ -2,8 +2,8 @@ import express from "express";
 import { prisma } from "database/index";
 import { Jwt } from "jsonwebtoken";
 import cors from "cors";
-import { serverAuthMiddleware } from "../dist/serverAuthMiddleware.js";
-import { rateLimitingMiddleware } from "../dist/rateLimitingMiddleware.js";
+import { serverAuthMiddleware } from "./serverAuthMiddleware.js";
+import { rateLimitingMiddleware } from "./rateLimitingMiddleware.js";
 import { Queue } from "bullmq";
 
 
