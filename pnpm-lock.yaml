@@ -18,7 +18,7 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
-  apps/server:
+  apps/http:
     dependencies:
       '@types/node':
         specifier: ^22.15.3
@@ -262,18 +262,21 @@ importers:
   packages/shared:
     dependencies:
       '@aws-sdk/client-s3':
-        specifier: ^3.450.0
+        specifier: ^3.0.0
         version: 3.832.0
       '@aws-sdk/s3-request-presigner':
-        specifier: ^3.450.0
+        specifier: ^3.0.0
         version: 3.832.0
       minio:
         specifier: ^7.1.3
         version: 7.1.4
     devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../typescript-config
+      '@types/node':
+        specifier: ^18.0.0
+        version: 18.19.103
+      typescript:
+        specifier: ^5.0.0
+        version: 5.8.2
 
   packages/typescript-config: {}
 

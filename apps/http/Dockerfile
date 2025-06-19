@@ -1,38 +1,38 @@
-# 1. Builder Stage: Build the monorepo
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-# Install pnpm and turbo
-RUN npm install -g pnpm@9.0.0 turbo
+RUN npm install -g pnpm@9.0.0
 
-# Copy root manifests and install all dependencies
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY apps/http/package.json ./apps/http/
+COPY packages/database/package.json ./packages/database/
+COPY packages/shared/package.json ./packages/shared/
+
 RUN pnpm install --frozen-lockfile
 
-# Copy all source code
 COPY . .
 
-# Generate Prisma Client
-# This ensures the client is available for the build
 RUN pnpm --filter database run db:generate
 
-# Build the specific application and its dependencies
-RUN pnpm turbo run build --filter=http...
+RUN pnpm --filter shared run build
 
-# Prune the monorepo to only include what's needed for the 'http' app
-RUN pnpm turbo prune --scope=http --docker
+RUN pnpm --filter http run build
 
-# 2. Runner Stage: Create the final, small image
 FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Copy the pruned files from the builder stage
-COPY --from=builder /app/out/json .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
-COPY --from=builder /app/out/full .
+RUN npm install -g pnpm@9.0.0
 
-# Install production dependencies
-RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
+# Copy built application
+COPY --from=builder /app/apps/http/dist ./apps/http/dist
+COPY --from=builder /app/apps/http/package.json ./apps/http/
+COPY --from=builder /app/packages/database ./packages/database
+COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/pnpm-workspace.yaml ./
+COPY --from=builder /app/pnpm-lock.yaml ./
 
-# Set the command to run the application
+RUN pnpm install --prod --frozen-lockfile
+
+EXPOSE 3001
 CMD ["node", "apps/http/dist/index.js"]
