@@ -1,5 +1,5 @@
 import express from "express";
-import { prisma } from "database/index";
+import { prisma } from "../../../packages/database/dist/index.js";
 import { Jwt } from "jsonwebtoken";
 import cors from "cors";
 import { serverAuthMiddleware } from "./serverAuthMiddleware.js";
