@@ -18,6 +18,43 @@ importers:
         specifier: 5.8.2
         version: 5.8.2
 
+  apps/http:
+    dependencies:
+      '@types/node':
+        specifier: ^22.15.3
+        version: 22.15.18
+      bullmq:
+        specifier: ^5.53.0
+        version: 5.53.0
+      cors:
+        specifier: ^2.8.5
+        version: 2.8.5
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.5.0
+      express:
+        specifier: ^4.21.2
+        version: 4.21.2
+      jsonwebtoken:
+        specifier: ^9.0.2
+        version: 9.0.2
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
+      '@types/cors':
+        specifier: ^2.8.17
+        version: 2.8.18
+      '@types/express':
+        specifier: ^5.0.0
+        version: 5.0.1
+      '@types/jsonwebtoken':
+        specifier: ^9.0.9
+        version: 9.0.9
+      database:
+        specifier: workspace:*
+        version: link:../../packages/database
+
   apps/server:
     dependencies:
       '@types/node':

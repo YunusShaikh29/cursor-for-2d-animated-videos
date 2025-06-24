@@ -16,9 +16,11 @@ export async function GET(req: Request, { params }: conversationIdProps) {
     return new NextResponse("Unauthorized user", { status: 401 });
   }
 
+  const conversationId = await params.conversationId
+
   try {
     const conversation = await prisma.conversation.findUnique({
-      where: { id: params.conversationId, userId: session.user.id },
+      where: { id: conversationId, userId: session.user.id },
       include: {
         message: {
           include: {
@@ -46,10 +48,12 @@ export async function PATCH(req: Request, { params }: conversationIdProps) {
     return new NextResponse("Unauthorized user", { status: 401 });
   }
 
+  const conversationId = await params.conversationId
+
   try {
     const updatedConversation = await prisma.conversation.update({
       where: {
-        id: params.conversationId,
+        id: conversationId,
         userId: session.user.id,
       },
       data: {
@@ -70,11 +74,13 @@ export async function DELETE(req: Request, { params }: conversationIdProps) {
     return new NextResponse("Unauthorized user", { status: 401 });
   }
 
+    const conversationId = await params.conversationId
+
   try {
     const jobs = await prisma.job.findMany({
       where: {
         message: {
-          conversationId: params.conversationId,
+          conversationId,
         },
         videoUrl: {
           not: null,
@@ -104,7 +110,7 @@ export async function DELETE(req: Request, { params }: conversationIdProps) {
 
     await prisma.conversation.delete({
       where: {
-        id: params.conversationId,
+        id: conversationId,
         userId: session.user.id,
       },
     });

@@ -38,7 +38,7 @@ export async function ChatSidebar() {
 
   return (
     <Sidebar className="w-64">
-      <SidebarHeader className="m-auto text-xl">Text2Scene</SidebarHeader>
+      <SidebarHeader className="m-auto text-xl">Cursor 2D</SidebarHeader>
       <SidebarSeparator />
       <SidebarContent>
         <SidebarGroup>
