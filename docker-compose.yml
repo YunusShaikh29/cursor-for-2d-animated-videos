@@ -1,0 +1,85 @@
+version: '3.8'
+# this is production docker compose file.
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: cursor2d
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis for job queue
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # Next.js Web App
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+      - AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+      - NEXT_PUBLIC_EXPRESS_URL=${NEXT_PUBLIC_EXPRESS_URL}
+      - SERVER_SECRET=${SERVER_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+      - STORAGE_PROVIDER=${STORAGE_PROVIDER}
+      - BUCKET_NAME=${BUCKET_NAME}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+    restart: unless-stopped
+
+  # Express HTTP Server
+  http:
+    build:
+      context: .
+      dockerfile: apps/http/Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - AUTH_SECRET=${AUTH_SECRET}
+      - SERVER_SECRET=${SERVER_SECRET}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - PORT=8080
+      - DATABASE_URL=${DATABASE_URL}
+    restart: unless-stopped
+
+  # Manim Worker
+  worker:
+    build:
+      context: .
+      dockerfile: packages/manim-worker/Dockerfile
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - DATABASE_URL=${DATABASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - BYPASS_LLM_CALL=false
+      - STORAGE_PROVIDER=${STORAGE_PROVIDER}
+      - BUCKET_NAME=${BUCKET_NAME}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=${AWS_REGION}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
