@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { auth } from "@/auth";
 import { NextResponse } from "next/server";
-import { prisma } from "database/index";
+import { prisma } from "database";
 
 export async function POST(req: Request) {
   try {

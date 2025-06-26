@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "database/index";
+import { prisma } from "database";
 import { auth } from "@/auth";
 import { storageClient } from "shared/storage";
 
 interface conversationIdProps {
-  params: {
+  params: Promise<{
     conversationId: string;
-  };
+  }>;
 }
 
 export async function GET(req: Request, { params }: conversationIdProps) {
@@ -16,7 +16,7 @@ export async function GET(req: Request, { params }: conversationIdProps) {
     return new NextResponse("Unauthorized user", { status: 401 });
   }
 
-  const conversationId = await params.conversationId
+  const { conversationId } = await params;
 
   try {
     const conversation = await prisma.conversation.findUnique({
@@ -48,7 +48,7 @@ export async function PATCH(req: Request, { params }: conversationIdProps) {
     return new NextResponse("Unauthorized user", { status: 401 });
   }
 
-  const conversationId = await params.conversationId
+  const { conversationId } = await params;
 
   try {
     const updatedConversation = await prisma.conversation.update({
@@ -74,7 +74,7 @@ export async function DELETE(req: Request, { params }: conversationIdProps) {
     return new NextResponse("Unauthorized user", { status: 401 });
   }
 
-    const conversationId = await params.conversationId
+  const { conversationId } = await params;
 
   try {
     const jobs = await prisma.job.findMany({
@@ -92,19 +92,24 @@ export async function DELETE(req: Request, { params }: conversationIdProps) {
     });
 
     const videoUrls = jobs
-      .map(job => job.videoUrl)
-      .filter((url): url is string => url !== null);
+      .map((job: any) => job.videoUrl)
+      .filter((url: any): url is string => url !== null);
 
     // Delete videos from storage
     if (videoUrls.length > 0) {
       const deleteResults = await storageClient.deleteFilesByUrls(videoUrls);
-      
+
       if (deleteResults.failed.length > 0) {
-        console.error(`Failed to delete ${deleteResults.failed.length} videos:`, deleteResults.failed);
+        console.error(
+          `Failed to delete ${deleteResults.failed.length} videos:`,
+          deleteResults.failed
+        );
       }
-      
+
       if (deleteResults.success.length > 0) {
-        console.log(`Successfully deleted ${deleteResults.success.length} videos`);
+        console.log(
+          `Successfully deleted ${deleteResults.success.length} videos`
+        );
       }
     }
 

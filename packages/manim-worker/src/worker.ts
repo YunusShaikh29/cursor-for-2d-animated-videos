@@ -1,6 +1,7 @@
-import { Worker } from "bullmq";
-import { prisma } from "database/index";
 import { config } from "dotenv";
+config();
+import { Worker } from "bullmq";
+import { prisma } from "database";
 import OpenAI from "openai";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
@@ -8,9 +9,9 @@ import * as os from "node:os";
 import { execa } from "execa";
 import { exec } from "node:child_process";
 import { PathLike } from "fs";
-import { storageClient } from "shared/storage"; // Updated import
+import * as storageModule from "shared/storage"; 
+const {storageClient} = storageModule
 
-config();
 
 interface parsedData {
   jobId: string;

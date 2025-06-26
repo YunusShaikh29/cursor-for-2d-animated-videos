@@ -2,11 +2,12 @@
 
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
-import { prisma } from "database/index";
+import { prisma } from "database";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { JWT } from "next-auth/jwt";
+import type { NextAuthConfig } from "next-auth";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
     Google({
@@ -31,4 +32,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
   },
-});
+};
+
+const nextAuth = NextAuth(authConfig);
+
+export const handlers: typeof nextAuth.handlers = nextAuth.handlers;
+export const signIn: typeof nextAuth.signIn = nextAuth.signIn;
+export const signOut: typeof nextAuth.signOut = nextAuth.signOut;
+export const auth: typeof nextAuth.auth = nextAuth.auth;

@@ -3,14 +3,15 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 
-RUN npm install -g pnpm@9.0.0 turbo
+RUN npm install -g pnpm
 
-COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json turbo.json ./
+COPY apps ./apps
+COPY packages ./packages
+
 RUN pnpm install --frozen-lockfile
 
-COPY . .
-
-RUN pnpm --filter database run db:generate
+RUN pnpm --filter database exec prisma generate
 
 RUN pnpm turbo run build --filter=http...
 
@@ -23,6 +24,6 @@ COPY --from=builder /app/out/json .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/out/full .
 
-RUN npm install -g pnpm@9.0.0 && pnpm install --prod --frozen-lockfile
+RUN npm install -g pnpm && pnpm install --prod --frozen-lockfile
 
 CMD ["node", "apps/http/dist/index.js"]
