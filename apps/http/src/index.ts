@@ -1,11 +1,13 @@
+import { config } from "dotenv";
+config()
+
 import express from "express";
-import { prisma } from "database/index";
+import { prisma } from "database";
 import { Jwt } from "jsonwebtoken";
 import cors from "cors";
-import { serverAuthMiddleware } from "../dist/serverAuthMiddleware.js";
-import { rateLimitingMiddleware } from "../dist/rateLimitingMiddleware.js";
+import { serverAuthMiddleware } from "./serverAuthMiddleware.js";
+import { rateLimitingMiddleware } from "./rateLimitingMiddleware.js";
 import { Queue } from "bullmq";
-import { config } from "dotenv";
 
 
 const queue = new Queue('animation-job-queue', {
@@ -18,7 +20,6 @@ const queue = new Queue('animation-job-queue', {
 
 const PORT = process.env.PORT || 8080
 
-config()
 
 const app = express();
 app.use(express.json());

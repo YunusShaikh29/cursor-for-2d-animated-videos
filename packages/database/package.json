@@ -2,16 +2,22 @@
   "name": "database",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+   "build": "tsc -b && cp -r generated/ dist/",
     "db:generate": "prisma generate",      
     "db:migrate:dev": "prisma migrate dev", 
     "db:migrate:deploy": "prisma migrate deploy", 
     "db:studio": "prisma studio"
   },
   "exports": {
-    "./index": "./index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
   },
   "type": "module",
   "keywords": [],

@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { prisma } from "database/index";
+import { prisma } from "database";
 
 import { LandingPage } from "@/components/landing-page";
 

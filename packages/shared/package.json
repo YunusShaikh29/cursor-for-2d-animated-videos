@@ -2,10 +2,16 @@
   "name": "shared",
   "version": "1.0.0",
   "description": "",
+  "main": "./dist/storage.js",
+  "types": "./dist/storage.d.ts",
   "scripts": {
+    "build": "tsc -b"
   },
   "exports": {
-    "./storage": "./src/storage.ts"
+    "./storage": {
+      "types": "./dist/storage.d.ts",
+      "import": "./dist/storage.js"
+    }
   },
   "type": "module",
   "keywords": [],

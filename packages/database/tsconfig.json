@@ -1,3 +1,10 @@
+// packages/database/tsconfig.json
 {
   "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": ["index.ts"],
+  "exclude": ["node_modules", "dist", "generated"]
 }

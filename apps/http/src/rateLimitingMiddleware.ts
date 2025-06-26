@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { prisma } from "database/index";
+import { prisma } from "database";
 
 const MAX_DAILY_ANIMATIONS = 50;
 
