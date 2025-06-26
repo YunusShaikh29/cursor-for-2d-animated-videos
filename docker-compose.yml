@@ -1,3 +1,5 @@
+# docker-compose.yml
+
 version: '3.8'
 # this is production docker compose file.
 
@@ -40,6 +42,8 @@ services:
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_REGION=${AWS_REGION}
+    ports: 
+      - "3000:3000" 
     restart: unless-stopped
 
   # Express HTTP Server
@@ -56,6 +60,8 @@ services:
       - REDIS_PASSWORD=${REDIS_PASSWORD}
       - PORT=8080
       - DATABASE_URL=${DATABASE_URL}
+    ports: 
+      - "8080:8080" 
     restart: unless-stopped
 
   # Manim Worker
