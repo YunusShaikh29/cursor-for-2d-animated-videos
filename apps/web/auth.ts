@@ -17,6 +17,7 @@ const authConfig: NextAuthConfig = {
   ],
   secret: process.env.AUTH_SECRET,
   session: { strategy: "jwt" },
+  trustHost: true,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
