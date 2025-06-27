@@ -19,17 +19,18 @@ const authConfig: NextAuthConfig = {
   session: { strategy: "jwt" },
   trustHost: true,
 
-  cookies: {
-    sessionToken: {
-      name: '__Secure-next-auth.session-token',
-      options: {
-        httpOnly: true,
-        sameSite: 'lax',
-        path: '/',
-        secure: true,
-      },
-    },
-  },
+  // Remove the custom cookie configuration that might be causing issues
+  // cookies: {
+  //   sessionToken: {
+  //     name: '__Secure-next-auth.session-token',
+  //     options: {
+  //       httpOnly: true,
+  //       sameSite: 'lax',
+  //       path: '/',
+  //       secure: true,
+  //     },
+  //   },
+  // },
 
   callbacks: {
     async jwt({ token, user }) {
@@ -42,10 +43,21 @@ const authConfig: NextAuthConfig = {
       if (token.sub && session.user) {
         session.user.id = token.sub as string;
       }
-
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl
+    },
   },
+  
+  pages: {
+    signIn: '/api/auth/signin',
+    error: '/api/auth/error',
+  },
+
+  debug: true,
 };
 
 const nextAuth = NextAuth(authConfig);
