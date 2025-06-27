@@ -29,6 +29,8 @@ model User {
 
   dailyAnimationCount  Int  @default(0)
   lastAnimationDate    DateTime? 
+
+  Session Session[]
 }
 
 model Conversation {
@@ -68,6 +70,16 @@ model Job {
 
   messageId     String?      @unique
   message       Message?     @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id           String    @id @default(cuid())
+  sessionToken String    @unique
+  userId       String
+  expires      DateTime
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("Session") // Optional: Ensures table name is "Session" if you configured Prisma to lowercase
 }
 
 
