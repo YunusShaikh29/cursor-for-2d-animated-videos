@@ -11,6 +11,15 @@ import type { NextAuthConfig } from "next-auth";
 const HARDCODED_AUTH_SECRET =
   "57363e978a9bde141c9524b1799222278397266fe68b7cbcdebee57d7e2c24d8";
 
+console.log("--- NextAuth.js Auth Config Environment Check ---");
+console.log("process.env.NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
+console.log("process.env.AUTH_SECRET (via env):", process.env.AUTH_SECRET); 
+console.log("process.env.AUTH_GOOGLE_ID:", process.env.AUTH_GOOGLE_ID);
+console.log("process.env.AUTH_TRUST_HOST:", process.env.AUTH_TRUST_HOST);
+console.log("process.env.AUTH_DEBUG:", process.env.AUTH_DEBUG);
+console.log("process.env.DATABASE_URL:", process.env.DATABASE_URL); 
+console.log("--- End NextAuth.js Auth Config Environment Check ---");
+
 const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
