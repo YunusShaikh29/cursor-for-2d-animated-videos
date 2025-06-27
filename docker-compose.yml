@@ -28,6 +28,8 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
+    env_file:
+      - ./.env
     environment:
       - NODE_ENV=${NODE_ENV}
       - NEXTAUTH_URL=${NEXTAUTH_URL}
@@ -51,6 +53,8 @@ services:
     build:
       context: .
       dockerfile: apps/http/Dockerfile
+    env_file:
+      - ./.env
     environment:
       - NODE_ENV=${NODE_ENV}
       - AUTH_SECRET=${AUTH_SECRET}
@@ -69,6 +73,8 @@ services:
     build:
       context: .
       dockerfile: packages/manim-worker/Dockerfile
+    env_file:
+      - ./.env
     environment:
       - NODE_ENV=${NODE_ENV}
       - REDIS_HOST=redis
