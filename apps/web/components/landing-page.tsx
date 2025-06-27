@@ -16,13 +16,13 @@ import {
   Quote, 
 } from "lucide-react";
 import Link from "next/link";
-
+import { signIn } from "next-auth/react"; 
 
 const examples = [
   {
     prompt:
       "Animate a tree data structure being built.",
-      videoSrc: "/videos/example-1.mp4", 
+    videoSrc: "/videos/example-1.mp4", 
   },
   {
     prompt:
@@ -37,6 +37,10 @@ export const LandingPage = () => {
     show: { opacity: 1, y: 0, transition: { type: "spring" } },
   };
 
+  const handleSignIn = () => {
+    signIn("google", { callbackUrl: "/" });
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -45,11 +49,9 @@ export const LandingPage = () => {
             <Bot className="h-6 w-6 text-primary" />
             <span className="font-bold">Cursor 2D</span>
           </Link>
-          <Link href="/api/auth/signin">
-            <Button>
-              Sign In <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
+          <Button onClick={handleSignIn}>
+            Sign In <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
       </header>
 
@@ -86,12 +88,10 @@ export const LandingPage = () => {
               complex software needed.
             </motion.p>
             <motion.div variants={FADE_IN_ANIMATION_VARIANTS}>
-              <Link href="/api/auth/signin">
-                <Button size="lg" className="mt-4">
-                  Get Started for Free
-                  <Wand2 className="ml-2 h-5 w-5" />
-                </Button>
-              </Link>
+              <Button size="lg" className="mt-4" onClick={handleSignIn}>
+                Get Started for Free
+                <Wand2 className="ml-2 h-5 w-5" />
+              </Button>
             </motion.div>
           </motion.div>
         </section>
