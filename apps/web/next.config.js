@@ -17,7 +17,6 @@ const nextConfig = {
     AWS_REGION: process.env.AWS_REGION,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY, 
     BYPASS_LLM_CALL: process.env.BYPASS_LLM_CALL,
-    NODE_ENV: process.env.NODE_ENV
   },
 };
 
