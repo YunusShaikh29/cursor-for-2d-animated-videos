@@ -34,6 +34,10 @@ const ConversationIdPage = async ({ params }: ConversationIdPageProps) => {
     );
   }
 
+  console.log("DEBUGGING SESSION, (main)/conversation/[conversationId]/page.tsx: ", session);
+  console.log("DEBUGGING SESSION USER, (main)/conversation/[conversationId]/page.tsx: ", session.user);
+  console.log("DEBUGGING SESSION USER ID (main)/conversation/[conversationId]/page.tsx: ", session.user.id);
+
   let conversation: ConversationWithMessages | null = null;
 
   try {

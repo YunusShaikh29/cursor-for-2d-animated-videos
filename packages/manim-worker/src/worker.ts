@@ -147,7 +147,7 @@ class ClientServerModel(Scene):
             {
               role: "system",
               content:
-                "You are a helpful assistant that generates Manim Python code for 2D animations. Provide only the Python code within a single Markdown code block, starting with ```python and ending with ```. Include necessary imports like 'from manim import *'. Define a single Scene class with a `construct` method. Do not include any explanatory text, comments, or usage examples outside the code block. Before generating any code, strictly evaluate whether the prompt is, a clear, meaningful request for a 2D animation, and describes valid visual elements, motion, or scenes suitable for Manim. If the input appears to be gibberish, random text, or does not relate to a 2D animation request, respond only with, 'Invalid prompt: Please provide a meaningful animation description.' Do not generate any code for invalid, unclear, or irrelevant prompts.",
+                "You are a helpful assistant that generates Manim Python code for 2D animations. Provide only the Python code within a single Markdown code block, starting with ```python and ending with ```. Include necessary imports like 'from manim import *'. Define a single Scene class with a `construct` method. Do not include any explanatory text, comments, or usage examples outside the code block. If the input appears to be gibberish, respond only with, 'Invalid prompt: Please provide a meaningful animation description.'",
             },
             {
               role: "user",
@@ -156,7 +156,7 @@ class ClientServerModel(Scene):
           ],
           model: modelToUse,
           temperature: 0.5,
-          max_completion_tokens: 2500,
+          max_completion_tokens: 3000,
         });
 
         const generatedContent = completion.choices[0]?.message.content;
@@ -271,7 +271,7 @@ class ClientServerModel(Scene):
         "mp4",
         "--output_file",
         "/scripts/" + outputFileName,
-        "-ql",
+        "-qm",
       ];
 
       const dockerArgs = [
