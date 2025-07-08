@@ -244,6 +244,26 @@ class ClientServerModel(Scene):
       const sceneNameRegex = /class (\w+)\(Scene\):?/;
       const sceneMatch = manimScript.match(sceneNameRegex);
 
+      if (process.env.NODE_ENV === "development") {
+        await new Promise<void>((resolve, reject) => {
+          const windowsPermsCmd = `icacls "${tempDir}" /grant Everyone:(F) /T`;
+          console.log(
+            `Worker: Attempting to set permissions: ${windowsPermsCmd}`
+          );
+          exec(windowsPermsCmd, (error, stdout, stderr) => {
+            if (error) {
+              console.error("Worker Error: Failed to set permissions:", error);
+              resolve();
+            } else {
+              console.log(
+                "Worker: Permissions set successfully (or command finished)."
+              );
+              resolve();
+            }
+          });
+        });
+      }
+
       if (sceneMatch && sceneMatch[1]) {
         sceneClassName = sceneMatch[1];
         console.log(`Worker: Extracted Scene class name: ${sceneClassName}`);
