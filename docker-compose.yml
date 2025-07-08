@@ -46,6 +46,7 @@ services:
       - AWS_REGION=${AWS_REGION}
     ports: 
       - "3000:3000" 
+      - "5555:5555"
     restart: unless-stopped
 
   # Express HTTP Server
@@ -90,6 +91,7 @@ services:
       - AWS_REGION=${AWS_REGION}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ${HOST_TEMP_DIR_BASE}:${HOST_TEMP_DIR_BASE}
     restart: unless-stopped
 
 volumes:

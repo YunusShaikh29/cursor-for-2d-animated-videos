@@ -9,9 +9,8 @@ import * as os from "node:os";
 import { execa } from "execa";
 import { exec } from "node:child_process";
 import { PathLike } from "fs";
-import * as storageModule from "shared/storage"; 
-const {storageClient} = storageModule
-
+import * as storageModule from "shared/storage";
+const { storageClient } = storageModule;
 
 interface parsedData {
   jobId: string;
@@ -219,7 +218,19 @@ class ClientServerModel(Scene):
     let outputFilePath = null;
 
     try {
-      tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "manim-job-"));
+      let hostTempDirBase = process.env.HOST_TEMP_DIR_BASE;
+      if (!hostTempDirBase) {
+        throw new Error("HOST_TEMP_DIR_BASE environment variable is not set.");
+      }
+
+      if (process.platform === "win32") {
+        hostTempDirBase = `C:${hostTempDirBase.replace(/\//g, "\\")}`;
+      }
+
+      await fs.mkdir(hostTempDirBase, { recursive: true });
+
+      tempDir = await fs.mkdtemp(path.join(hostTempDirBase, "manim-job-"));
+      await fs.chmod(tempDir, 0o777);
 
       const scriptFileName = `animation_script_${jobId}.py`;
       const outputFileName = `output_${jobId}.mp4`;
@@ -227,10 +238,31 @@ class ClientServerModel(Scene):
       outputFilePath = path.join(tempDir, outputFileName);
 
       await fs.writeFile(scriptFilePath, manimScript);
+      await fs.chmod(scriptFilePath, 0o644);
 
       let sceneClassName = "SceneFromPrompt"; //default
       const sceneNameRegex = /class (\w+)\(Scene\):?/;
       const sceneMatch = manimScript.match(sceneNameRegex);
+
+      if (process.env.NODE_ENV === "development") {
+        await new Promise<void>((resolve, reject) => {
+          const windowsPermsCmd = `icacls "${tempDir}" /grant Everyone:(F) /T`;
+          console.log(
+            `Worker: Attempting to set permissions: ${windowsPermsCmd}`
+          );
+          exec(windowsPermsCmd, (error, stdout, stderr) => {
+            if (error) {
+              console.error("Worker Error: Failed to set permissions:", error);
+              resolve();
+            } else {
+              console.log(
+                "Worker: Permissions set successfully (or command finished)."
+              );
+              resolve();
+            }
+          });
+        });
+      }
 
       if (sceneMatch && sceneMatch[1]) {
         sceneClassName = sceneMatch[1];
@@ -240,24 +272,6 @@ class ClientServerModel(Scene):
           `Worker Warning: Could not extract standard Scene class name from script for job ${jobId}. Assuming default: ${sceneClassName}`
         );
       }
-      
-      await new Promise<void>((resolve, reject) => {
-        const windowsPermsCmd = `icacls "${tempDir}" /grant Everyone:(F) /T`;
-        console.log(
-          `Worker: Attempting to set permissions: ${windowsPermsCmd}`
-        );
-        exec(windowsPermsCmd, (error, stdout, stderr) => {
-          if (error) {
-            console.error("Worker Error: Failed to set permissions:", error);
-            resolve();
-          } else {
-            console.log(
-              "Worker: Permissions set successfully (or command finished)."
-            );
-            resolve();
-          }
-        });
-      });
 
       const dockerImage = "manimcommunity/manim:latest";
 
@@ -337,18 +351,30 @@ class ClientServerModel(Scene):
 
     let permanentOutputPath = null;
 
-    // Upload video to storage (MinIO locally, S3 in production)
-    if (outputFilePath && (await fs.stat(outputFilePath).then(() => true).catch(() => false))) {
+    if (
+      outputFilePath &&
+      (await fs
+        .stat(outputFilePath)
+        .then(() => true)
+        .catch(() => false))
+    ) {
       try {
         console.log(`Worker: Starting video upload phase for job id ${jobId}`);
-        console.log(`Worker: Using storage provider: ${storageClient.getProvider()}`);
-        
+        console.log(
+          `Worker: Using storage provider: ${storageClient.getProvider()}`
+        );
+
         const fileName = `animation_${jobId}.mp4`;
-        const videoUrl = await storageClient.uploadFile(fileName, outputFilePath);
-        
-        console.log(`Worker: Uploaded video to ${storageClient.getProvider()}: ${fileName}`);
+        const videoUrl = await storageClient.uploadFile(
+          fileName,
+          outputFilePath
+        );
+
+        console.log(
+          `Worker: Uploaded video to ${storageClient.getProvider()}: ${fileName}`
+        );
         console.log(`Worker: Video URL: ${videoUrl}`);
-        
+
         permanentOutputPath = videoUrl;
       } catch (uploadError: any) {
         console.error(

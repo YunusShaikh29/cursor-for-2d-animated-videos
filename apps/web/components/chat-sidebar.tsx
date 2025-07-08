@@ -13,10 +13,14 @@ import { NewChatButton } from "./new-chat-button";
 import { ChatList } from "./chat-list";
 import { auth } from "@/auth";
 import { ChatListProps } from "./chat-list";
+import { prisma } from "database";
 
 export async function ChatSidebar() {
   const session = await auth();
   const userId = session?.user?.id;
+
+  console.log("ChatSidebar session:", session);
+  console.log("ChatSidebar userId:", userId);
 
   let conversationsList: ChatListProps[] = [];
 
@@ -35,6 +39,8 @@ export async function ChatSidebar() {
   } catch (e) {
     console.log(e);
   }
+
+  console.log("ChatSidebar conversationsList:", conversationsList);
 
   return (
     <Sidebar className="w-64">
