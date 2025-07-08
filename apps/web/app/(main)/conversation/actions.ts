@@ -11,6 +11,8 @@ export async function createJobAndMessage(
 ) {
   const session = await auth();
 
+  console.log("Server action: createJobAndMessage called with conversationId:", conversationId, "and prompt:", prompt);
+
   if (!session || !session.user || !session.user.id) {
     console.error("Server action: Unauthorized access attempted.");
     throw new Error("Unauthorized, Please sign in.");
@@ -32,7 +34,7 @@ export async function createJobAndMessage(
           "Content-Type": "application/json",
           "X-Server-Auth": process.env.SERVER_SECRET,
         },
-        timeout: 1000,
+        timeout: 10000,
       }
     );
 
@@ -61,6 +63,7 @@ export async function createJobAndMessage(
     }
 
     const data = response.data;
+    console.log("Server action: createJobAndMessage response data:", data);
     return data;
   } catch (e: any) {
     console.error("Server aciton catch block error:", e.message);

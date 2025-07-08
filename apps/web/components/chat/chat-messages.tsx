@@ -47,12 +47,18 @@ export const ChatMessages = ({
   const handleFormSubmit = async (values: { prompt: string }) => {
     setIsLoading(true);
     try {
+      console.log("Submitting message/job with values:", values);
+      if (!values.prompt.trim()) {
+        console.warn("Prompt is empty, not submitting.");
+        return;
+      }
       const response = await createJobAndMessage(
         conversationId,
         values.prompt.trim()
       );
 
-      // const result = await response.data;
+      const result = await response.data;
+      console.log("Server action response:", result);
       console.log("Message/Job creation successful:", response);
       const updatedConversationResponse = await axios.get(`/api/conversation/${conversationId}`)
       setCurrentConversation(updatedConversationResponse.data)
@@ -132,56 +138,6 @@ export const ChatMessages = ({
         ) : (
           <div className="space-y-4 p-4">
             {currentConversation.message.map((message, index) => (
-              // <div
-              //   key={message.id}
-              //   className={cn(
-              //     "p-3 rounded-lg max-w-[80%]",
-              //     message.role === "user"
-              //       ? "ml-auto bg-primary text-primary-foreground"
-              //       : "mr-auto bg-muted"
-              //   )}
-              // >
-              //   <p>{message.content}</p>
-              //   {message.role === "user" && message.Job && (
-              //     <div className="text-xs mt-2 space-y-2">
-              //       <div className="flex items-center gap-2 opacity-80">
-              //         <span>Status: {message.Job.status}</span>
-              //         {(message.Job.status === "pending" || 
-              //           message.Job.status === "processing") && (
-              //           <Loader2 className="h-3 w-3 animate-spin" />
-              //         )}
-              //       </div>
-                    
-              //       {/* 🔥 RENDER VIDEO WHEN COMPLETE */}
-              //       {message.Job.status === "complete" && message.Job.videoUrl && (
-              //         <div className="mt-3">
-              //           <video
-              //             src={message.Job.videoUrl}
-              //             controls
-              //             className="rounded-lg w-full max-w-md border shadow-sm"
-              //             preload="metadata"
-              //           >
-              //             Your browser does not support the video tag.
-              //           </video>
-              //         </div>
-              //       )}
-                    
-              //       {/* 🔥 SHOW PROCESSING MESSAGE */}
-              //       {message.Job.status === "processing" && (
-              //         <div className="text-sm text-blue-400">
-              //           🎬 Generating your animation...
-              //         </div>
-              //       )}
-                    
-              //       {/* 🔥 SHOW ERROR IF FAILED */}
-              //       {message.Job.status === "failed" && (
-              //         <div className="text-sm text-red-400">
-              //           ❌ Failed: {message.Job.error || "Unknown error"}
-              //         </div>
-              //       )}
-              //     </div>
-              //   )}
-              // </div>
               <ChatItem message={message} key={message.id} index={index}/>
             ))}
             <div ref={messagesEndRef} />

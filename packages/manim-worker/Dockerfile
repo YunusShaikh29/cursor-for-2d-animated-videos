@@ -20,6 +20,8 @@ RUN pnpm turbo prune --scope=manim-worker --docker
 FROM node:18-alpine AS runner
 WORKDIR /app
 
+RUN apk add --no-cache docker-cli
+
 COPY --from=builder /app/out/json .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 COPY --from=builder /app/out/full .
