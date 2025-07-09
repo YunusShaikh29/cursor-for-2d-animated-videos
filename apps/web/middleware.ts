@@ -29,7 +29,7 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  const token = await getToken({ req: request, secret: secret });
+  const token = await getToken({ req: request, secret: secret , cookieName: "__Secure-authjs.session-token" });
 
   console.log("Result of getToken:", token);
   console.log("--- End of Middleware Request ---\n");
