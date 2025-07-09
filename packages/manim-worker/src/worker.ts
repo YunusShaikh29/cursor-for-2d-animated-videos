@@ -68,7 +68,7 @@ const worker = new Worker(
 
     let manimScript = null;
     const BYPASS_LLM = process.env.BYPASS_LLM_CALL === "true";
-    const modelToUse = "gpt-4o-mini";
+    const modelToUse = "gpt-4.1";
 
     console.log(
       `Worker: Calling OpenAI API (${modelToUse}) for job ${jobId}...`
@@ -155,7 +155,7 @@ class ClientServerModel(Scene):
           ],
           model: modelToUse,
           temperature: 0.5,
-          max_completion_tokens: 3000,
+          max_completion_tokens: 3500,
         });
 
         const generatedContent = completion.choices[0]?.message.content;

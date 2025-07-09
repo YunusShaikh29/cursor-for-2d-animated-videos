@@ -1,84 +1,167 @@
-# Turborepo starter
+# Cursor 2D - AI-Powered 2D Animation Generator
 
-This Turborepo starter is maintained by the Turborepo core team.
+Generate high-quality 2D animations using AI. This application allows users to create animations by describing them in natural language, which are then generated using Manim and AI.
 
-## Using this example
+## Features
 
-Run the following command:
+- 🤖 AI-powered animation generation using OpenAI
+- 🎬 Manim-based 2D animation rendering
+- �� Google OAuth authentication
+- 💾 PostgreSQL database with Prisma ORM
+- 🚀 Redis-based job queue for background processing
+- 📦 MinIO/S3 storage for video assets
+- 🐳 Docker-based development environment
 
-```sh
-npx create-turbo@latest
+## Tech Stack
+
+- **Frontend**: Next.js 15, Tailwind, TypeScript
+- **Backend**: Express.js, Node.js
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js with Google OAuth
+- **Job Queue**: Redis with BullMQ
+- **Storage**: MinIO (local) / AWS S3 (production)
+- **Animation**: Manim (Python)
+
+## Quick Start (Docker)
+
+### Prerequisites
+- Docker and Docker Compose installed
+- Google OAuth credentials (you'll need to get your own credentials)
+
+### Setup
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd cursor-for-2d-animations-video
+   ```
+
+2. **Configure environment variables**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your actual values
+   ```
+
+3. **Start the development environment**
+   ```bash
+   docker-compose -f docker-compose.dev.yml up --build -d
+   ```
+
+4. **Initialize the database**
+   ```bash
+   docker-compose -f docker-compose.dev.yml exec web npx prisma db push
+   ```
+
+5. **Access the application**
+   - Web App: http://localhost:3000
+   - MinIO Console: http://localhost:9001 (admin/minioadmin123)
+   - Express API: http://localhost:8080
+
+6. **Create bucket inside minio**
+    - Go to localhost:9001
+    - Use user/passowrd(admin/minioadmin123)
+    - Create a bucket name video-assets
+### Required Environment Variables
+
+See `.env.example` for all required variables. Key ones include:
+- `AUTH_GOOGLE_ID` & `AUTH_GOOGLE_SECRET` - Google OAuth credentials
+- `OPENAI_API_KEY` - OpenAI API key for AI generation
+- `AUTH_SECRET` - NextAuth secret (generate with `openssl rand -base64 32`)
+
+## Development
+
+### Services
+- **Web** (Next.js): Port 3000
+- **HTTP** (Express): Port 8080  
+- **Worker** (Manim): Background processing
+- **PostgreSQL**: Port 5432
+- **Redis**: Port 6379
+- **MinIO**: Port 9000 (API), 9001 (Console)
+
+### Development Workflow
+
+**Note**: Currently, when you make changes to the code, you need to rebuild the containers to see the changes:
+
+```bash
+# After making code changes
+docker-compose -f docker-compose.dev.yml up --build -d
 ```
 
-## What's inside?
+### Useful Commands
+```bash
+# View logs
+docker-compose -f docker-compose.dev.yml logs -f web
 
-This Turborepo includes the following packages/apps:
+# Restart a service
+docker-compose -f docker-compose.dev.yml restart web
 
-### Apps and Packages
+# Stop all services
+docker-compose -f docker-compose.dev.yml down
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-pnpm build
+# Rebuild and restart
+docker-compose -f docker-compose.dev.yml up --build -d
 ```
 
-### Develop
+## Troubleshooting
 
-To develop all apps and packages, run the following command:
+### Common Issues
 
+1. **Port already in use**
+   ```bash
+   # Check what's using the port
+   lsof -i :3000
+   # Kill the process or change the port in docker-compose.dev.yml
+   ```
+
+2. **Database connection issues**
+   ```bash
+   # Check if postgres is running
+   docker-compose -f docker-compose.dev.yml ps postgres
+   # View postgres logs
+   docker-compose -f docker-compose.dev.yml logs postgres
+   ```
+
+3. **MinIO not accessible**
+   - Check if MinIO is running: `docker-compose -f docker-compose.dev.yml ps minio`
+   - Access console at http://localhost:9001
+   - Default credentials: admin/minioadmin123
+
+4. **Worker not processing jobs**
+   ```bash
+   # Check worker logs
+   docker-compose -f docker-compose.dev.yml logs worker
+   # Check Redis connection
+   docker-compose -f docker-compose.dev.yml exec redis redis-cli ping
+   ```
+
+5. **Authentication issues**
+   - Ensure Google OAuth credentials are correctly set in `.env`
+   - Check `NEXTAUTH_URL` matches your local setup
+   - Verify `AUTH_SECRET` is properly set
+
+### Reset Everything
+```bash
+# Stop and remove all containers, volumes, and images
+docker-compose -f docker-compose.dev.yml down -v --rmi all
+# Start fresh
+docker-compose -f docker-compose.dev.yml up --build -d
 ```
-cd my-turborepo
-pnpm dev
-```
 
-### Remote Caching
+## Architecture
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+The application consists of:
+1. **Next.js Frontend**: User interface and authentication
+2. **Express Backend**: API endpoints and job creation
+3. **Worker Service**: Background animation generation using Manim
+4. **PostgreSQL**: User data, conversations, and job tracking
+5. **Redis**: Job queue management
+6. **MinIO/S3**: Video file storage
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
+## Contributing
 
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
+1. Clone the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with the Docker development environment
+5. Submit a pull request
 
-```
-cd my-turborepo
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```
-npx turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
