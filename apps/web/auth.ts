@@ -7,7 +7,6 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { JWT } from "next-auth/jwt";
 import type { NextAuthConfig } from "next-auth";
 
-
 const authConfig: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
@@ -19,8 +18,19 @@ const authConfig: NextAuthConfig = {
   secret: process.env.AUTH_SECRET,
   session: { strategy: "jwt" },
 
-  trustHost: true, 
-
+  trustHost: true,
+  cookies: {
+    sessionToken: {
+      name: `__Secure-authjs.session-token`,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: true,
+        domain: ".cursor2d.com",
+      },
+    },
+  },
 
   callbacks: {
     async jwt({ token, user }) {
