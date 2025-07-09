@@ -19,9 +19,6 @@ export async function ChatSidebar() {
   const session = await auth();
   const userId = session?.user?.id;
 
-  console.log("ChatSidebar session:", session);
-  console.log("ChatSidebar userId:", userId);
-
   let conversationsList: ChatListProps[] = [];
 
   try {
@@ -39,8 +36,6 @@ export async function ChatSidebar() {
   } catch (e) {
     console.log(e);
   }
-
-  console.log("ChatSidebar conversationsList:", conversationsList);
 
   return (
     <Sidebar className="w-64">

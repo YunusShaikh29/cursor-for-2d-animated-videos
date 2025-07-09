@@ -47,9 +47,7 @@ export const ChatMessages = ({
   const handleFormSubmit = async (values: { prompt: string }) => {
     setIsLoading(true);
     try {
-      console.log("Submitting message/job with values:", values);
       if (!values.prompt.trim()) {
-        console.warn("Prompt is empty, not submitting.");
         return;
       }
       const response = await createJobAndMessage(
@@ -58,8 +56,6 @@ export const ChatMessages = ({
       );
 
       const result = await response.data;
-      console.log("Server action response:", result);
-      console.log("Message/Job creation successful:", response);
       const updatedConversationResponse = await axios.get(`/api/conversation/${conversationId}`)
       setCurrentConversation(updatedConversationResponse.data)
 
@@ -91,7 +87,6 @@ export const ChatMessages = ({
       return;
     }
 
-    console.log("Starting polling, found pending jobs");
     setIsPolling(true);
 
     const interval = setInterval(async () => {

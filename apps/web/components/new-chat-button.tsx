@@ -12,10 +12,9 @@ export const NewChatButton = () => {
   const [isLoading, setIsLoading] = useState(false); 
 
   const createNewConversation = async () => {
-    setIsLoading(true); // Start loading
+    setIsLoading(true); 
     try {
       const response = await axios.post("/api/conversation");
-      console.log("New conversation created:", response.data); 
 
       const newConversation = response.data;
       if (!newConversation || !newConversation.id) {

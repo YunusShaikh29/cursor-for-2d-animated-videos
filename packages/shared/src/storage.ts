@@ -70,9 +70,7 @@ export class UnifiedStorageClient {
   async uploadFile(fileName: string, filePath: string): Promise<string> {
     if (this.config.provider === 'minio' && this.minioClient) {
       await this.minioClient.fPutObject(this.config.bucketName, fileName, filePath);
-      console.log(`Uploaded to MinIO: ${fileName}`);
       
-      // Return presigned URL for MinIO
       const presignedUrl = await this.minioClient.presignedGetObject(
         this.config.bucketName,
         fileName,
@@ -90,9 +88,7 @@ export class UnifiedStorageClient {
       });
 
       await this.s3Client.send(command);
-      console.log(`Uploaded to S3: ${fileName}`);
       
-      // Return public URL for S3 (since we made buckets public)
       return `https://${this.config.bucketName}.s3.${this.config.s3!.region}.amazonaws.com/${fileName}`;
     }
 
@@ -123,7 +119,6 @@ export class UnifiedStorageClient {
     try {
       if (this.config.provider === 'minio' && this.minioClient) {
         await this.minioClient.removeObject(this.config.bucketName, fileName);
-        console.log(`Deleted from MinIO: ${fileName}`);
         return true;
       } else if (this.config.provider === 's3' && this.s3Client) {
         const command = new DeleteObjectCommand({
@@ -132,7 +127,6 @@ export class UnifiedStorageClient {
         });
         
         await this.s3Client.send(command);
-        console.log(`Deleted from S3: ${fileName}`);
         return true;
       }
       
@@ -191,7 +185,7 @@ export class UnifiedStorageClient {
       
       return fileName;
     } catch (error) {
-      console.error('Failed to extract filename from URL:', url, error);
+      // Removed debugging logs for security
       throw new Error(`Invalid URL format: ${url}`);
     }
   }
@@ -217,7 +211,7 @@ export class UnifiedStorageClient {
           results.failed.push(url);
         }
       } catch (error) {
-        console.error(`Failed to process URL ${url}:`, error);
+        // Removed debugging logs for security
         results.failed.push(url);
       }
     });

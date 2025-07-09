@@ -11,7 +11,6 @@ export async function rateLimitingMiddleware(
   const userId = req.body.userId as string | undefined;
 
   if (!userId) {
-    console.log("Rate Limit Middleware: User Id missing in request body");
     res.status(400).json({ error: "UserId missing in request" });
   }
 
@@ -27,7 +26,6 @@ export async function rateLimitingMiddleware(
     });
 
     if (!user) {
-      console.error(`Rate Limit Middleware: User with ID ${userId} not found.`);
       res.status(404).json({ error: "User not found." });
     }
 
@@ -48,9 +46,6 @@ export async function rateLimitingMiddleware(
     }
 
     if (currentCount >= MAX_DAILY_ANIMATIONS) {
-      console.warn(
-        `Rate Limit Exceeded for user ${userId}. Count: ${user?.dailyAnimationCount}, Last Date: ${user?.lastAnimationDate}`
-      );
       res
         .status(429)
         .json({ error: `Rate limit exceeded (${MAX_DAILY_ANIMATIONS}/day).` });

@@ -8,8 +8,6 @@ export const serverAuthMiddleware = (
 ) => {
     config()
   const serverAuthSecret = req.headers["x-server-auth"];
-  console.log(serverAuthSecret);
-  console.log(process.env.SERVER_SECRET);
 
   if (serverAuthSecret && serverAuthSecret === process.env.SERVER_SECRET) {
     next();

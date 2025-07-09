@@ -1,5 +1,5 @@
 import { config } from "dotenv";
-config()
+config();
 
 import express from "express";
 import { prisma } from "database";
@@ -9,17 +9,15 @@ import { serverAuthMiddleware } from "./serverAuthMiddleware.js";
 import { rateLimitingMiddleware } from "./rateLimitingMiddleware.js";
 import { Queue } from "bullmq";
 
+const queue = new Queue("animation-job-queue", {
+  connection: {
+    host: process.env.REDIS_HOST || "localhost",
+    port: Number(process.env.REDIS_PORT) || 6379,
+    password: process.env.REDIS_PASSWORD || undefined,
+  },
+});
 
-const queue = new Queue('animation-job-queue', {
-    connection: {
-      host: process.env.REDIS_HOST || "localhost",
-      port: Number(process.env.REDIS_PORT) || 6379,
-       password: process.env.REDIS_PASSWORD || undefined,
-    }
-})
-
-const PORT = process.env.PORT || 8080
-
+const PORT = process.env.PORT || 8080;
 
 const app = express();
 app.use(express.json());
@@ -111,18 +109,18 @@ app.post(
         return { message: newMesage, job: newJob };
       });
 
-
-      const queueRes = await queue.add('animation', {jobId: transactionResult.job.id, userId, conversationId, prompt })
-      console.log(queueRes.data )
+      const queueRes = await queue.add("animation", {
+        jobId: transactionResult.job.id,
+        userId,
+        conversationId,
+        prompt,
+      });
 
       res.status(201).json({
         message: transactionResult.message,
         job: transactionResult.job,
         status: transactionResult.job.status,
       });
-
-
-
     } catch (error: any) {
       console.error("Job Creation Transaction Failed:", error);
 

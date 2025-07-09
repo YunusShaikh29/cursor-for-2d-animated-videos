@@ -13,25 +13,17 @@ const authConfig: NextAuthConfig = {
     Google({
       clientId: process.env.AUTH_GOOGLE_ID,
       clientSecret: process.env.AUTH_GOOGLE_SECRET,
+      authorization: {
+        params: {
+          prompt: "select_account",
+        },
+      },
     }),
   ],
   secret: process.env.AUTH_SECRET,
   session: { strategy: "jwt" },
 
   trustHost: true,
-  cookies: {
-    sessionToken: {
-      name: `__Secure-authjs.session-token`,
-      options: {
-        httpOnly: true,
-        sameSite: "lax",
-        path: "/",
-        secure: true,
-        domain: ".cursor2d.com",
-      },
-    },
-  },
-
   callbacks: {
     async jwt({ token, user }) {
       if (user) {

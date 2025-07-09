@@ -6,21 +6,7 @@ import { getToken } from "next-auth/jwt";
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  console.log("\n--- New Middleware Request ---");
-  console.log("Request Path:", pathname);
-
   const secret = process.env.AUTH_SECRET;
-  console.log(
-    "AUTH_SECRET loaded:",
-    secret ? `Yes, length ${secret.length}` : "No, it is MISSING!"
-  );
-
-  const cookieHeader = request.headers.get("cookie");
-  console.log(
-    "Cookie header received by server:",
-    cookieHeader ? "Exists" : "null"
-  );
-
 
   if (!secret) {
     return NextResponse.json(
@@ -29,10 +15,16 @@ export async function middleware(request: NextRequest) {
     );
   }
 
-  const token = await getToken({ req: request, secret: secret , cookieName: "__Secure-authjs.session-token" });
+  const sessionCookieName =
+    process.env.NODE_ENV === "production"
+      ? "__Secure-authjs.session-token"
+      : "authjs.session-token";
 
-  console.log("Result of getToken:", token);
-  console.log("--- End of Middleware Request ---\n");
+  const token = await getToken({
+    req: request,
+    secret: secret,
+    cookieName: sessionCookieName,
+  });
 
   if (!token) {
     const signInUrl = new URL("/api/auth/signin", request.url);
