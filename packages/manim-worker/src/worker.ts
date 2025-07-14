@@ -68,7 +68,7 @@ const worker = new Worker(
 
     let manimScript = null;
     const BYPASS_LLM = process.env.BYPASS_LLM_CALL === "true";
-    const modelToUse = "gpt-4.1";
+    const modelToUse = "gpt-4o-mini";
 
     console.log(
       `Worker: Calling OpenAI API (${modelToUse}) for job ${jobId}...`
