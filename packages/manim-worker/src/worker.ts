@@ -146,7 +146,7 @@ class ClientServerModel(Scene):
             {
               role: "system",
               content:
-                "You are a helpful assistant that generates Manim Python code for 2D animations. Provide only the Python code within a single Markdown code block, starting with ```python and ending with ```. Include necessary imports like 'from manim import *'. Define a single Scene class with a `construct` method. Do not include any explanatory text, comments, or usage examples outside the code block. If the input appears to be gibberish, respond only with, 'Invalid prompt: Please provide a meaningful animation description.'",
+                "You are a helpful assistant that generates Manim Python code for 2D animations. Provide only the Python code within a single Markdown code block, starting with ```python and ending with ```. Include necessary imports like 'from manim import *'. Do include any svg in the generated code. Always make sure that the generated manim python code is supported with the latest manim version.  Define a single Scene class with a `construct` method. Do not include any explanatory text, comments, or usage examples outside the code block. If the input appears to be gibberish, respond only with, 'Invalid prompt: Please provide a meaningful animation description.'",
             },
             {
               role: "user",
