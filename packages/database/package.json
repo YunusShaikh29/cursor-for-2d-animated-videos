@@ -7,10 +7,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-   "build": "tsc -b && cp -r generated/ dist/",
-    "db:generate": "prisma generate",      
-    "db:migrate:dev": "prisma migrate dev", 
-    "db:migrate:deploy": "prisma migrate deploy", 
+    "build": "tsc -b && cp -r generated/ dist/",
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:studio": "prisma studio",
     "db:push": "prisma db push"
   },
@@ -31,6 +31,7 @@
     "prisma": "^6.7.0"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
+    "@repo/typescript-config": "workspace:*",
+    "typescript": "^5.9.2"
   }
 }

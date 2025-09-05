@@ -218,7 +218,7 @@ class ClientServerModel(Scene):
     let outputFilePath = null;
 
     try {
-      let hostTempDirBase = process.env.HOST_TEMP_DIR_BASE;
+      let hostTempDirBase = process.env.HOST_TEMP_DIR_BASE; // /tmp/manim_worker_host_temps
       if (!hostTempDirBase) {
         throw new Error("HOST_TEMP_DIR_BASE environment variable is not set.");
       }

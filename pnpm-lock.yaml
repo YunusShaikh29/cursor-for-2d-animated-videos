@@ -183,17 +183,20 @@ importers:
     dependencies:
       '@prisma/client':
         specifier: 6.7.0
-        version: 6.7.0(prisma@6.7.0(typescript@5.8.2))(typescript@5.8.2)
+        version: 6.7.0(prisma@6.7.0(typescript@5.9.2))(typescript@5.9.2)
       '@types/node':
         specifier: ^22.15.3
         version: 22.15.18
       prisma:
         specifier: ^6.7.0
-        version: 6.7.0(typescript@5.8.2)
+        version: 6.7.0(typescript@5.9.2)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      typescript:
+        specifier: ^5.9.2
+        version: 5.9.2
 
   packages/eslint-config:
     devDependencies:
@@ -4212,6 +4215,11 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
+  typescript@5.9.2:
+    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
   uglify-js@3.19.3:
     resolution: {integrity: sha512-v3Xu+yuwBXisp6QYTcH4UbH+xYJXqnq2m/LtQVWKWzYc1iehYnLixoQDN9FH6/j9/oybfd6W9Ghwkl8+UMKTKQ==}
     engines: {node: '>=0.8.0'}
@@ -5265,6 +5273,11 @@ snapshots:
     optionalDependencies:
       prisma: 6.7.0(typescript@5.8.2)
       typescript: 5.8.2
+
+  '@prisma/client@6.7.0(prisma@6.7.0(typescript@5.9.2))(typescript@5.9.2)':
+    optionalDependencies:
+      prisma: 6.7.0(typescript@5.9.2)
+      typescript: 5.9.2
 
   '@prisma/config@6.7.0':
     dependencies:
@@ -8337,6 +8350,17 @@ snapshots:
       typescript: 5.8.2
     transitivePeerDependencies:
       - supports-color
+    optional: true
+
+  prisma@6.7.0(typescript@5.9.2):
+    dependencies:
+      '@prisma/config': 6.7.0
+      '@prisma/engines': 6.7.0
+    optionalDependencies:
+      fsevents: 2.3.3
+      typescript: 5.9.2
+    transitivePeerDependencies:
+      - supports-color
 
   prop-types@15.8.1:
     dependencies:
@@ -9013,6 +9037,8 @@ snapshots:
       - supports-color
 
   typescript@5.8.2: {}
+
+  typescript@5.9.2: {}
 
   uglify-js@3.19.3:
     optional: true
