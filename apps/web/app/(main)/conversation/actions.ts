@@ -31,7 +31,7 @@ export async function createJobAndMessage(
           "Content-Type": "application/json",
           "X-Server-Auth": process.env.SERVER_SECRET,
         },
-        timeout: 10000,
+        timeout: 30000,
       }
     );
 
